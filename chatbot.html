@@ -1,0 +1,43 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Chatbot DGuardian - DHL Style</title>
+
+  <!-- Estilos personalizados DHL -->
+  <style>
+    df-messenger {
+      --df-messenger-bot-message: #000000 !important; /* Fundo preto */
+      --df-messenger-bot-message-font-color: #FFFFFF !important; /* Texto branco */
+      --df-messenger-user-message: #D40511 !important; /* Mensagem do usuário em vermelho */
+      --df-messenger-user-message-font-color: #FFFFFF !important; /* Texto branco */
+      --df-messenger-chat-background-color: #FFF9E3 !important; /* Fundo do chat amarelo clarinho */
+      --df-messenger-button-titlebar-color: #D40511 !important; /* Barra do título vermelha */
+      --df-messenger-font-color: #FFFFFF !important; /* Texto da barra branca */
+      --df-messenger-send-icon: #FFFFFF !important; /* Ícone branco */
+    }
+
+    /* 🚨 Esse estilo extra força o fundo preto nas mensagens do bot */
+    df-messenger-chat message-bubble {
+      background-color: #000000 !important; /* Fundo preto */
+      color: #FFFFFF !important; /* Texto branco */
+    }
+  </style>
+
+</head>
+<body>
+  <script src="https://www.gstatic.com/dialogflow-console/fast/messenger/bootstrap.js?v=1"></script>
+  
+  <!-- Bot do Dialogflow com logo personalizada -->
+  <df-messenger
+    intent="WELCOME"
+    chat-title="DGuardian"
+    agent-id="0e08ef10-1d77-401e-a0ff-e49389d31ded"
+    language-code="pt-br"
+    chat-icon="https://dgr2019.github.io/chatbot/dguardian-logo.png">
+  </df-messenger>
+
+</body>
+</html>
+
