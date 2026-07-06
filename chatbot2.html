@@ -1,0 +1,325 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Chatbot DGuardian - DHL Style</title>
+
+  <!-- Estilos personalizados DHL -->
+  <style>
+    df-messenger {
+      --df-messenger-bot-message: #000000 !important;             /* Fundo preto */
+      --df-messenger-bot-message-font-color: #FFFFFF !important;  /* Texto branco */
+      --df-messenger-user-message: #D40511 !important;            /* Mensagem do usuário em vermelho */
+      --df-messenger-user-message-font-color: #FFFFFF !important; /* Texto branco */
+      --df-messenger-chat-background-color: #FFF9E3 !important;   /* Fundo do chat amarelo clarinho */
+      --df-messenger-button-titlebar-color: #D40511 !important;   /* Barra do título vermelha */
+      --df-messenger-font-color: #FFFFFF !important;              /* Texto da barra branca */
+      --df-messenger-send-icon: #FFFFFF !important;               /* Ícone branco */
+    }
+
+    /* 🚨 Esse estilo extra força o fundo preto nas mensagens do bot */
+    df-messenger-chat message-bubble {
+      background-color: #000000 !important;
+      color: #FFFFFF !important;
+    }
+
+    /* ── Barra de controles de voz (ao lado do balão do chat) ── */
+    #dg-voice-bar {
+      position: fixed;
+      bottom: 24px;
+      right: 100px;              /* deixa espaço pro ícone do df-messenger */
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      z-index: 999;
+      font-family: Arial, Helvetica, sans-serif;
+    }
+    .dg-btn {
+      width: 48px;
+      height: 48px;
+      border: none;
+      border-radius: 50%;
+      background: #D40511;
+      color: #FFFFFF;
+      font-size: 20px;
+      cursor: pointer;
+      box-shadow: 0 2px 6px rgba(0,0,0,.3);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: transform .1s ease, background .2s ease;
+    }
+    .dg-btn:hover { transform: scale(1.08); }
+    .dg-btn:focus-visible { outline: 3px solid #FFD700; }
+    .dg-btn.off { background: #8a8a8a; }
+    .dg-btn.listening {
+      background: #FFD700;
+      color: #D40511;
+      animation: dg-pulse 1s infinite;
+    }
+    @keyframes dg-pulse {
+      0%   { box-shadow: 0 0 0 0 rgba(212,5,17,.5); }
+      70%  { box-shadow: 0 0 0 14px rgba(212,5,17,0); }
+      100% { box-shadow: 0 0 0 0 rgba(212,5,17,0); }
+    }
+    #dg-lang {
+      height: 48px;
+      border: 2px solid #D40511;
+      border-radius: 24px;
+      background: #FFFFFF;
+      color: #D40511;
+      font-weight: bold;
+      font-size: 14px;
+      padding: 0 14px;
+      cursor: pointer;
+    }
+    #dg-status {
+      position: fixed;
+      bottom: 80px;
+      right: 100px;
+      background: #000000;
+      color: #FFD700;
+      font-family: Arial, Helvetica, sans-serif;
+      font-size: 13px;
+      padding: 6px 12px;
+      border-radius: 12px;
+      z-index: 999;
+      display: none;
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Controles de voz -->
+  <div id="dg-status"></div>
+  <div id="dg-voice-bar">
+    <select id="dg-lang" title="Idioma / Language" aria-label="Idioma do chatbot">
+      <option value="pt-br" selected>🇧🇷 PT</option>
+      <option value="en">🇺🇸 EN</option>
+    </select>
+    <button id="dg-tts" class="dg-btn" title="Ouvir respostas do bot" aria-label="Ativar ou desativar leitura em voz alta">🔊</button>
+    <button id="dg-mic" class="dg-btn" title="Falar com a DGuardian" aria-label="Falar com a DGuardian pelo microfone">🎤</button>
+  </div>
+
+  <script src="https://www.gstatic.com/dialogflow-console/fast/messenger/bootstrap.js?v=1"></script>
+
+  <!-- Container onde o df-messenger é (re)criado ao trocar de idioma -->
+  <div id="dg-container">
+    <df-messenger
+      intent="WELCOME"
+      chat-title="DGuardian"
+      agent-id="0e08ef10-1d77-401e-a0ff-e49389d31ded"
+      language-code="pt-br"
+      chat-icon="https://dgr2019.github.io/chatbot/dguardian-logo.png">
+    </df-messenger>
+  </div>
+
+  <script>
+    // ══════════════════════════════════════════════════
+    //  DGuardian Voice — microfone, leitura em voz alta
+    //  e troca de idioma (PT-BR / EN)
+    // ══════════════════════════════════════════════════
+
+    const AGENT_ID  = "0e08ef10-1d77-401e-a0ff-e49389d31ded";
+    const CHAT_ICON = "https://dgr2019.github.io/chatbot/dguardian-logo.png";
+
+    const UI_TEXT = {
+      "pt-br": {
+        title: "DGuardian",
+        listening: "Ouvindo... pode falar 🎤",
+        noMic: "Seu navegador não suporta reconhecimento de voz. Use o Chrome ou o Edge.",
+        micDenied: "Permita o acesso ao microfone nas configurações do navegador.",
+        ttsOn: "Leitura em voz alta ativada 🔊",
+        ttsOff: "Leitura em voz alta desativada 🔇",
+        langChanged: "Idioma alterado para Português. A conversa foi reiniciada."
+      },
+      "en": {
+        title: "DGuardian",
+        listening: "Listening... go ahead 🎤",
+        noMic: "Your browser does not support speech recognition. Please use Chrome or Edge.",
+        micDenied: "Please allow microphone access in your browser settings.",
+        ttsOn: "Read-aloud enabled 🔊",
+        ttsOff: "Read-aloud disabled 🔇",
+        langChanged: "Language switched to English. The conversation was restarted."
+      }
+    };
+
+    let currentLang = "pt-br";
+    let ttsEnabled  = true;
+    let recognition = null;
+    let isListening = false;
+
+    const micBtn   = document.getElementById("dg-mic");
+    const ttsBtn   = document.getElementById("dg-tts");
+    const langSel  = document.getElementById("dg-lang");
+    const statusEl = document.getElementById("dg-status");
+
+    // ── Aviso rápido na tela ──────────────────────────
+    let statusTimer = null;
+    function showStatus(msg, ms = 3000) {
+      statusEl.textContent = msg;
+      statusEl.style.display = "block";
+      clearTimeout(statusTimer);
+      if (ms) statusTimer = setTimeout(() => statusEl.style.display = "none", ms);
+    }
+
+    // ── Encontra o campo de texto dentro do df-messenger ──
+    function getDfInput() {
+      try {
+        const dfMessenger = document.querySelector("df-messenger");
+        const chat  = dfMessenger.shadowRoot.querySelector("df-messenger-chat");
+        const uiRoot = chat.shadowRoot.querySelector("df-messenger-user-input");
+        return uiRoot.shadowRoot.querySelector("input");
+      } catch (e) { return null; }
+    }
+
+    // ── Abre a janela do chat se estiver fechada ──────
+    function openChat() {
+      try {
+        const dfMessenger = document.querySelector("df-messenger");
+        if (!getDfInput()) {
+          dfMessenger.shadowRoot.querySelector("#widgetIcon")?.click();
+        }
+      } catch (e) { /* silencioso */ }
+    }
+
+    // ── Envia texto reconhecido como se o usuário tivesse digitado ──
+    function sendToBot(text) {
+      openChat();
+      // pequeno delay pro chat terminar de abrir
+      setTimeout(() => {
+        const input = getDfInput();
+        if (!input) return;
+        input.value = text;
+        input.dispatchEvent(new Event("input", { bubbles: true }));
+        input.dispatchEvent(new KeyboardEvent("keydown", {
+          key: "Enter", code: "Enter", keyCode: 13, which: 13, bubbles: true
+        }));
+      }, 400);
+    }
+
+    // ══════════════════ MICROFONE ═════════════════════
+    function setupRecognition() {
+      const SR = window.SpeechRecognition || window.webkitSpeechRecognition;
+      if (!SR) { micBtn.style.display = "none"; return; }
+
+      recognition = new SR();
+      recognition.lang = (currentLang === "pt-br") ? "pt-BR" : "en-US";
+      recognition.interimResults = false;
+      recognition.maxAlternatives = 1;
+
+      recognition.onstart = () => {
+        isListening = true;
+        micBtn.classList.add("listening");
+        showStatus(UI_TEXT[currentLang].listening, 0);
+      };
+      recognition.onresult = (e) => {
+        const text = e.results[0][0].transcript;
+        sendToBot(text);
+      };
+      recognition.onerror = (e) => {
+        if (e.error === "not-allowed") showStatus(UI_TEXT[currentLang].micDenied);
+      };
+      recognition.onend = () => {
+        isListening = false;
+        micBtn.classList.remove("listening");
+        statusEl.style.display = "none";
+      };
+    }
+
+    micBtn.addEventListener("click", () => {
+      if (!recognition) { showStatus(UI_TEXT[currentLang].noMic); return; }
+      if (isListening) { recognition.stop(); return; }
+      window.speechSynthesis.cancel(); // não falar por cima do usuário
+      recognition.start();
+    });
+
+    // ══════════════ LEITURA EM VOZ ALTA ═══════════════
+    function cleanForSpeech(text) {
+      return (text || "")
+        .replace(/<[^>]*>/g, " ")                                   // remove HTML
+        .replace(/https?:\/\/\S+/g, "")                             // remove links
+        .replace(/[\u{1F300}-\u{1FAFF}\u{2600}-\u{27BF}]/gu, "")     // remove emojis
+        .replace(/\s+/g, " ")
+        .trim();
+    }
+
+    function pickVoice(langCode) {
+      const voices = window.speechSynthesis.getVoices();
+      const prefix = (langCode === "pt-br") ? "pt" : "en";
+      // Prioriza vozes naturais da Microsoft (Edge) e do Google (Chrome)
+      return voices.find(v => v.lang.toLowerCase().startsWith(prefix) && /natural|google/i.test(v.name))
+          || voices.find(v => v.lang.toLowerCase().startsWith(prefix))
+          || null;
+    }
+
+    function speak(text) {
+      const clean = cleanForSpeech(text);
+      if (!clean) return;
+      window.speechSynthesis.cancel();
+      const utter = new SpeechSynthesisUtterance(clean);
+      utter.lang = (currentLang === "pt-br") ? "pt-BR" : "en-US";
+      const voice = pickVoice(currentLang);
+      if (voice) utter.voice = voice;
+      utter.rate = 1.0;
+      window.speechSynthesis.speak(utter);
+    }
+
+    // Garante que a lista de vozes carregue (alguns navegadores carregam async)
+    window.speechSynthesis.onvoiceschanged = () => {};
+
+    ttsBtn.addEventListener("click", () => {
+      ttsEnabled = !ttsEnabled;
+      ttsBtn.classList.toggle("off", !ttsEnabled);
+      ttsBtn.textContent = ttsEnabled ? "🔊" : "🔇";
+      if (!ttsEnabled) window.speechSynthesis.cancel();
+      showStatus(ttsEnabled ? UI_TEXT[currentLang].ttsOn : UI_TEXT[currentLang].ttsOff);
+    });
+
+    // Lê as respostas do bot quando chegam
+    function attachResponseListener() {
+      const dfMessenger = document.querySelector("df-messenger");
+      if (!dfMessenger) return;
+      dfMessenger.addEventListener("df-response-received", (event) => {
+        if (!ttsEnabled) return;
+        const qr = event.detail?.response?.queryResult;
+        if (!qr) return;
+        let text = qr.fulfillmentText || "";
+        if (!text && Array.isArray(qr.fulfillmentMessages)) {
+          text = qr.fulfillmentMessages
+            .map(m => m.text?.text?.join(" ") || "")
+            .join(" ");
+        }
+        speak(text);
+      });
+    }
+
+    // ══════════════ TROCA DE IDIOMA ═══════════════════
+    function rebuildMessenger(langCode) {
+      const container = document.getElementById("dg-container");
+      container.innerHTML = "";
+      const df = document.createElement("df-messenger");
+      df.setAttribute("intent", "WELCOME");
+      df.setAttribute("chat-title", UI_TEXT[langCode].title);
+      df.setAttribute("agent-id", AGENT_ID);
+      df.setAttribute("language-code", langCode);
+      df.setAttribute("chat-icon", CHAT_ICON);
+      container.appendChild(df);
+      attachResponseListener();
+    }
+
+    langSel.addEventListener("change", () => {
+      currentLang = langSel.value;
+      window.speechSynthesis.cancel();
+      if (recognition) recognition.lang = (currentLang === "pt-br") ? "pt-BR" : "en-US";
+      rebuildMessenger(currentLang);
+      showStatus(UI_TEXT[currentLang].langChanged, 4000);
+    });
+
+    // ══════════════ INICIALIZAÇÃO ═════════════════════
+    window.addEventListener("dfMessengerLoaded", attachResponseListener);
+    setupRecognition();
+  </script>
+</body>
+</html>
