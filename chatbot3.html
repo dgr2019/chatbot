@@ -3,592 +3,1378 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>DGuardian — DHL</title>
+
+  <title>DGuardian - Especialista Internacional</title>
+
+  <!-- Dialogflow Messenger -->
+  <script src="https://www.gstatic.com/dialogflow-console/fast/messenger/bootstrap.js?v=1"></script>
 
   <style>
+    /* ══════════════════════════════════════════════════
+       DGUARDIAN — NOVO VISUAL DHL
+       Apenas alterações visuais
+       ══════════════════════════════════════════════════ */
+
     :root {
-      --dhl-yellow:   #FFCC00;
-      --dhl-yellow-2: #FFD84D;
-      --dhl-red:      #D40511;
-      --dhl-cream:    #FBF3DC;   /* fundo do chat */
-      --dhl-ink:      #1a1a1a;
+      --dhl-red: #D40511;
+      --dhl-red-dark: #B0000B;
+      --dhl-yellow: #FFCC00;
+      --dhl-yellow-light: #FFE57A;
+      --dhl-cream: #FFF9E8;
+      --dhl-white: #FFFFFF;
+      --dhl-black: #191919;
+      --dhl-gray: #747474;
+      --dhl-border: #E5E5E5;
     }
 
-    * { box-sizing: border-box; }
+    * {
+      box-sizing: border-box;
+    }
 
     body {
       margin: 0;
       min-height: 100vh;
-      background: #E9E9E9;
-      font-family: "Segoe UI", Arial, Helvetica, sans-serif;
+      background:
+        radial-gradient(
+          circle at center,
+          #FFFFFF 0%,
+          #F5F5F5 52%,
+          #E8E8E8 100%
+        );
+      font-family: Arial, Helvetica, sans-serif;
+    }
+
+    /* ══════════════════════════════════════════════════
+       DIALOGFLOW MESSENGER
+       ══════════════════════════════════════════════════ */
+
+    df-messenger {
+      --df-messenger-bot-message: #FFFFFF !important;
+      --df-messenger-bot-message-font-color: #191919 !important;
+
+      --df-messenger-user-message: #D40511 !important;
+      --df-messenger-user-message-font-color: #FFFFFF !important;
+
+      --df-messenger-chat-background-color: #FFF9E8 !important;
+
+      --df-messenger-button-titlebar-color: #FFCC00 !important;
+      --df-messenger-font-color: #D40511 !important;
+
+      --df-messenger-send-icon: #D40511 !important;
+
+      --df-messenger-input-box-color: #FFFFFF !important;
+      --df-messenger-input-font-color: #191919 !important;
+      --df-messenger-input-placeholder-font-color: #8A8A8A !important;
+
+      --df-messenger-minimized-chat-close-icon-color: #FFFFFF !important;
+
+      --df-messenger-chip-border-color: #D40511 !important;
+      --df-messenger-chip-font-color: #D40511 !important;
+
+      position: fixed;
+      right: 24px;
+      bottom: 24px;
+      z-index: 998;
+
+      font-family: Arial, Helvetica, sans-serif !important;
+    }
+
+    /* ══════════════════════════════════════════════════
+       CUSTOMIZAÇÃO INTERNA DO CHAT
+       Aplicada via Shadow DOM pelo JavaScript
+       ══════════════════════════════════════════════════ */
+
+    /* Mantido como fallback visual */
+    df-messenger-chat message-bubble {
+      background-color: #FFFFFF !important;
+      color: #191919 !important;
+      border-radius: 18px !important;
+      box-shadow: 0 5px 16px rgba(0, 0, 0, 0.10) !important;
+    }
+
+    /* ══════════════════════════════════════════════════
+       BARRA DE VOZ
+       ══════════════════════════════════════════════════ */
+
+    #dg-voice-bar {
+      position: fixed;
+      bottom: 24px;
+      right: 100px;
+
+      display: flex;
+      align-items: center;
+      gap: 10px;
+
+      z-index: 999;
+
+      font-family: Arial, Helvetica, sans-serif;
+    }
+
+    /* Botões redondos */
+    .dg-btn {
+      width: 52px;
+      height: 52px;
+
+      border: 2px solid #FFFFFF;
+      border-radius: 50%;
+
+      background:
+        linear-gradient(
+          135deg,
+          #D40511 0%,
+          #B0000B 100%
+        );
+
+      color: #FFFFFF;
+
+      font-size: 20px;
+
+      cursor: pointer;
+
+      box-shadow:
+        0 8px 22px rgba(0, 0, 0, 0.22),
+        0 2px 6px rgba(212, 5, 17, 0.22);
+
       display: flex;
       align-items: center;
       justify-content: center;
-      padding: 16px;
+
+      transition:
+        transform 0.18s ease,
+        box-shadow 0.18s ease,
+        background 0.2s ease;
     }
 
-    /* ═══════════ CARD DO CHAT ═══════════ */
-    #dg-card {
-      width: 100%;
-      max-width: 420px;
-      height: min(640px, calc(100vh - 32px));
-      background: #FFFFFF;
-      border-radius: 24px;
-      box-shadow: 0 12px 40px rgba(0,0,0,.18), 0 4px 0 var(--dhl-yellow);
-      display: flex;
-      flex-direction: column;
-      overflow: hidden;
-      position: relative;
-    }
-    #dg-card.dg-hidden { display: none; }
+    .dg-btn:hover {
+      transform: translateY(-2px) scale(1.05);
 
-    /* ═══════════ HEADER AMARELO ═══════════ */
-    #dg-header {
-      background: linear-gradient(180deg, var(--dhl-yellow-2) 0%, var(--dhl-yellow) 100%);
-      padding: 18px 20px 16px 20px;
-      display: flex;
-      align-items: center;
-      gap: 12px;
-      position: relative;
-      overflow: hidden;
-      flex-shrink: 0;
+      box-shadow:
+        0 12px 28px rgba(0, 0, 0, 0.26),
+        0 3px 10px rgba(212, 5, 17, 0.25);
     }
-    /* listras de "velocidade" DHL */
-    #dg-header::after {
-      content: "";
-      position: absolute;
-      right: -20px; top: 0;
-      width: 55%; height: 100%;
+
+    .dg-btn:active {
+      transform: scale(0.97);
+    }
+
+    .dg-btn:focus-visible {
+      outline: 3px solid #FFCC00;
+      outline-offset: 3px;
+    }
+
+    /* TTS desligado */
+    .dg-btn.off {
       background:
-        linear-gradient(90deg, transparent 0 12%, rgba(255,255,255,.28) 12% 30%, transparent 30% 38%, rgba(255,255,255,.20) 38% 60%, transparent 60% 66%, rgba(255,255,255,.14) 66% 100%);
-      transform: skewX(-30deg);
-      pointer-events: none;
+        linear-gradient(
+          135deg,
+          #8A8A8A 0%,
+          #555555 100%
+        );
     }
-    #dg-header img.dg-logo {
-      height: 26px;
-      z-index: 1;
-    }
-    #dg-header .dg-title {
-      z-index: 1;
-      line-height: 1.15;
-      flex: 1;
-      min-width: 0;
-    }
-    #dg-header .dg-title b {
-      display: block;
-      color: var(--dhl-red);
-      font-size: 21px;
-      letter-spacing: .2px;
-    }
-    #dg-header .dg-title span {
-      color: var(--dhl-ink);
-      font-size: 13.5px;
-    }
-    #dg-header .dg-tools {
-      z-index: 1;
-      display: flex;
-      align-items: center;
-      gap: 6px;
-    }
-    .dg-hbtn {
-      border: none;
-      background: rgba(255,255,255,.55);
-      color: var(--dhl-red);
-      width: 32px; height: 32px;
-      border-radius: 50%;
-      font-size: 15px;
-      cursor: pointer;
-      display: flex; align-items: center; justify-content: center;
-      transition: background .15s ease, transform .1s ease;
-    }
-    .dg-hbtn:hover { background: #FFFFFF; transform: scale(1.06); }
-    .dg-hbtn:focus-visible { outline: 3px solid var(--dhl-red); }
-    .dg-hbtn.off { opacity: .45; }
-    .dg-hbtn.listening {
-      background: var(--dhl-red);
-      color: #FFF;
+
+    /* Microfone ouvindo */
+    .dg-btn.listening {
+      background:
+        linear-gradient(
+          135deg,
+          #FFCC00 0%,
+          #FFE680 100%
+        );
+
+      color: #D40511;
+
       animation: dg-pulse 1s infinite;
     }
+
     @keyframes dg-pulse {
-      0%   { box-shadow: 0 0 0 0 rgba(212,5,17,.45); }
-      70%  { box-shadow: 0 0 0 10px rgba(212,5,17,0); }
-      100% { box-shadow: 0 0 0 0 rgba(212,5,17,0); }
-    }
-    #dg-min {
-      background: transparent;
-      font-size: 26px;
-      font-weight: bold;
-      color: var(--dhl-red);
-      width: 30px;
-      line-height: 1;
-    }
-    #dg-min:hover { background: rgba(255,255,255,.5); }
+      0% {
+        box-shadow:
+          0 0 0 0 rgba(212, 5, 17, 0.48);
+      }
 
-    /* ═══════════ ÁREA DO DF-MESSENGER ═══════════ */
-    #dg-body {
-      flex: 1;
-      position: relative;
-      background: var(--dhl-cream);
-      min-height: 0;
-    }
-    #dg-body df-messenger {
-      position: absolute;
-      inset: 0;
+      70% {
+        box-shadow:
+          0 0 0 16px rgba(212, 5, 17, 0);
+      }
+
+      100% {
+        box-shadow:
+          0 0 0 0 rgba(212, 5, 17, 0);
+      }
     }
 
-    /* status flutuante (mic ouvindo, idioma trocado etc.) */
-    #dg-status {
-      position: absolute;
-      top: 10px; left: 50%;
-      transform: translateX(-50%);
-      background: var(--dhl-ink);
-      color: var(--dhl-yellow);
-      font-size: 12.5px;
-      padding: 6px 14px;
-      border-radius: 14px;
-      z-index: 50;
-      display: none;
-      white-space: nowrap;
-      box-shadow: 0 2px 8px rgba(0,0,0,.25);
-    }
+    /* ══════════════════════════════════════════════════
+       SELETOR DE IDIOMA
+       ══════════════════════════════════════════════════ */
 
-    /* ═══════════ BOTÃO FLUTUANTE (minimizado) ═══════════ */
-    #dg-fab {
-      position: fixed;
-      bottom: 22px; right: 22px;
-      width: 64px; height: 64px;
-      border-radius: 50%;
-      border: none;
-      background: var(--dhl-yellow);
-      cursor: pointer;
-      box-shadow: 0 6px 18px rgba(0,0,0,.25);
-      display: none;
-      align-items: center;
-      justify-content: center;
-      transition: transform .12s ease;
-      z-index: 60;
-    }
-    #dg-fab:hover { transform: scale(1.07); }
-    #dg-fab img { width: 40px; height: 40px; border-radius: 50%; }
-    #dg-fab.show { display: flex; }
-
-    /* seletor de idioma compacto */
     #dg-lang {
-      border: none;
-      background: rgba(255,255,255,.55);
-      color: var(--dhl-red);
-      font-weight: bold;
-      font-size: 12.5px;
-      height: 32px;
-      border-radius: 16px;
-      padding: 0 8px;
+      height: 52px;
+
+      border: 2px solid #FFCC00;
+      border-radius: 28px;
+
+      background: #FFFFFF;
+      color: #D40511;
+
+      font-weight: 800;
+      font-size: 14px;
+
+      padding: 0 16px;
+
       cursor: pointer;
+
+      box-shadow:
+        0 8px 22px rgba(0, 0, 0, 0.16);
+
+      transition:
+        transform 0.18s ease,
+        box-shadow 0.18s ease,
+        border-color 0.18s ease;
     }
-    #dg-lang:hover { background: #FFF; }
+
+    #dg-lang:hover {
+      transform: translateY(-2px);
+
+      border-color: #D40511;
+
+      box-shadow:
+        0 12px 26px rgba(0, 0, 0, 0.20);
+    }
+
+    #dg-lang:focus-visible {
+      outline: 3px solid #FFCC00;
+      outline-offset: 3px;
+    }
+
+    /* ══════════════════════════════════════════════════
+       STATUS
+       ══════════════════════════════════════════════════ */
+
+    #dg-status {
+      position: fixed;
+
+      bottom: 88px;
+      right: 100px;
+
+      background: #191919;
+      color: #FFCC00;
+
+      font-family: Arial, Helvetica, sans-serif;
+      font-size: 13px;
+      font-weight: 700;
+
+      padding: 9px 15px;
+
+      border-radius: 16px;
+
+      z-index: 999;
+
+      display: none;
+
+      box-shadow:
+        0 8px 24px rgba(0, 0, 0, 0.24);
+
+      border:
+        1px solid rgba(255, 204, 0, 0.20);
+    }
+
+    /* ══════════════════════════════════════════════════
+       RESPONSIVIDADE
+       ══════════════════════════════════════════════════ */
+
+    @media (max-width: 600px) {
+      #dg-voice-bar {
+        right: 82px;
+        bottom: 18px;
+        gap: 6px;
+      }
+
+      .dg-btn {
+        width: 44px;
+        height: 44px;
+        font-size: 17px;
+      }
+
+      #dg-lang {
+        height: 44px;
+        padding: 0 10px;
+        font-size: 12px;
+      }
+
+      #dg-status {
+        right: 18px;
+        bottom: 76px;
+        max-width: calc(100vw - 36px);
+      }
+
+      df-messenger {
+        right: 18px;
+        bottom: 18px;
+      }
+    }
   </style>
 </head>
+
 <body>
 
-  <!-- ═══════════ CARD ═══════════ -->
-  <div id="dg-card">
-    <div id="dg-header">
-      <img class="dg-logo" src="https://dgr2019.github.io/chatbot/logo-dhl.png" alt="DHL">
-      <div class="dg-title">
-        <b>DGuardian</b>
-        <span>Especialista Internacional</span>
-      </div>
-      <div class="dg-tools">
-        <select id="dg-lang" title="Idioma / Language" aria-label="Idioma do chatbot">
-          <option value="pt-br" selected>🇧🇷</option>
-          <option value="en">🇺🇸</option>
-        </select>
-        <button id="dg-tts" class="dg-hbtn" title="Ouvir respostas" aria-label="Ativar ou desativar leitura em voz alta">🔊</button>
-        <button id="dg-mic" class="dg-hbtn" title="Falar com a DGuardian" aria-label="Falar pelo microfone">🎤</button>
-        <button id="dg-min" class="dg-hbtn" title="Minimizar" aria-label="Minimizar o chat">—</button>
-      </div>
-    </div>
+  <!-- ══════════════════════════════════════════════════
+       STATUS DE VOZ
+       ══════════════════════════════════════════════════ -->
 
-    <div id="dg-body">
-      <div id="dg-status"></div>
-      <div id="dg-container">
-        <df-messenger
-          intent="WELCOME"
-          chat-title="DGuardian"
-          agent-id="0e08ef10-1d77-401e-a0ff-e49389d31ded"
-          language-code="pt-br"
-          chat-icon="https://dgr2019.github.io/chatbot/dguardian-logo.png">
-        </df-messenger>
-      </div>
-    </div>
+  <div id="dg-status"></div>
+
+
+  <!-- ══════════════════════════════════════════════════
+       CONTROLES DE VOZ
+       Funcionalidades mantidas
+       ══════════════════════════════════════════════════ -->
+
+  <div id="dg-voice-bar">
+
+    <select
+      id="dg-lang"
+      title="Idioma / Language"
+      aria-label="Idioma do chatbot"
+    >
+      <option value="pt-br" selected>🇧🇷 PT</option>
+      <option value="en">🇺🇸 EN</option>
+    </select>
+
+    <button
+      id="dg-tts"
+      class="dg-btn"
+      title="Ouvir respostas do bot"
+      aria-label="Ativar ou desativar leitura em voz alta"
+    >
+      🔊
+    </button>
+
+    <button
+      id="dg-mic"
+      class="dg-btn"
+      title="Falar com a DGuardian"
+      aria-label="Falar com a DGuardian pelo microfone"
+    >
+      🎤
+    </button>
+
   </div>
 
-  <!-- botão flutuante quando minimizado -->
-  <button id="dg-fab" title="Abrir DGuardian" aria-label="Abrir o chat DGuardian">
-    <img src="https://dgr2019.github.io/chatbot/dguardian-logo.png" alt="">
-  </button>
 
-  <script src="https://www.gstatic.com/dialogflow-console/fast/messenger/bootstrap.js?v=1"></script>
+  <!-- ══════════════════════════════════════════════════
+       CONTAINER DO CHAT
+       ══════════════════════════════════════════════════ -->
+
+  <div id="dg-container">
+
+    <df-messenger
+      intent="WELCOME"
+      chat-title="DGuardian"
+      agent-id="0e08ef10-1d77-401e-a0ff-e49389d31ded"
+      language-code="pt-br"
+      chat-icon="https://dgr2019.github.io/chatbot/dguardian-logo.png">
+    </df-messenger>
+
+  </div>
+
 
   <script>
     // ══════════════════════════════════════════════════
-    //  DGuardian — layout DHL + voz + idiomas (PT/EN)
+    // DGUARDIAN
+    // Funcionalidades originais preservadas:
+    // - Microfone
+    // - TTS
+    // - PT-BR / EN
+    // - Dialogflow
     // ══════════════════════════════════════════════════
-    const AGENT_ID  = "0e08ef10-1d77-401e-a0ff-e49389d31ded";
-    const CHAT_ICON = "https://dgr2019.github.io/chatbot/dguardian-logo.png";
+
+
+    const AGENT_ID =
+      "0e08ef10-1d77-401e-a0ff-e49389d31ded";
+
+    const CHAT_ICON =
+      "https://dgr2019.github.io/chatbot/dguardian-logo.png";
+
 
     const UI_TEXT = {
+
       "pt-br": {
-        subtitle: "Especialista Internacional",
-        placeholder: "Pergunte algo...",
-        listening: "Ouvindo... pode falar 🎤",
-        noMic: "Seu navegador não suporta reconhecimento de voz. Use o Chrome ou o Edge.",
-        micDenied: "Permita o acesso ao microfone nas configurações do navegador.",
-        ttsOn: "Leitura em voz alta ativada 🔊",
-        ttsOff: "Leitura em voz alta desativada 🔇",
-        langChanged: "Idioma alterado para Português."
+        title: "DGuardian",
+
+        listening:
+          "Ouvindo... pode falar 🎤",
+
+        noMic:
+          "Seu navegador não suporta reconhecimento de voz. Use o Chrome ou o Edge.",
+
+        micDenied:
+          "Permita o acesso ao microfone nas configurações do navegador.",
+
+        ttsOn:
+          "Leitura em voz alta ativada 🔊",
+
+        ttsOff:
+          "Leitura em voz alta desativada 🔇",
+
+        langChanged:
+          "Idioma alterado para Português. A conversa foi reiniciada."
       },
+
+
       "en": {
-        subtitle: "International Specialist",
-        placeholder: "Ask something...",
-        listening: "Listening... go ahead 🎤",
-        noMic: "Your browser does not support speech recognition. Please use Chrome or Edge.",
-        micDenied: "Please allow microphone access in your browser settings.",
-        ttsOn: "Read-aloud enabled 🔊",
-        ttsOff: "Read-aloud disabled 🔇",
-        langChanged: "Language switched to English."
+        title: "DGuardian",
+
+        listening:
+          "Listening... go ahead 🎤",
+
+        noMic:
+          "Your browser does not support speech recognition. Please use Chrome or Edge.",
+
+        micDenied:
+          "Please allow microphone access in your browser settings.",
+
+        ttsOn:
+          "Read-aloud enabled 🔊",
+
+        ttsOff:
+          "Read-aloud disabled 🔇",
+
+        langChanged:
+          "Language switched to English. The conversation was restarted."
       }
+
     };
 
+
     let currentLang = "pt-br";
-    let ttsEnabled  = true;
+    let ttsEnabled = true;
     let recognition = null;
     let isListening = false;
 
-    const micBtn   = document.getElementById("dg-mic");
-    const ttsBtn   = document.getElementById("dg-tts");
-    const langSel  = document.getElementById("dg-lang");
-    const statusEl = document.getElementById("dg-status");
-    const card     = document.getElementById("dg-card");
-    const fab      = document.getElementById("dg-fab");
-    const minBtn   = document.getElementById("dg-min");
 
-    // ── Aviso rápido na tela ──────────────────────────
+    const micBtn =
+      document.getElementById("dg-mic");
+
+    const ttsBtn =
+      document.getElementById("dg-tts");
+
+    const langSel =
+      document.getElementById("dg-lang");
+
+    const statusEl =
+      document.getElementById("dg-status");
+
+
+    // ══════════════════════════════════════════════════
+    // STATUS RÁPIDO
+    // ══════════════════════════════════════════════════
+
     let statusTimer = null;
+
     function showStatus(msg, ms = 3000) {
+
       statusEl.textContent = msg;
+
       statusEl.style.display = "block";
+
       clearTimeout(statusTimer);
-      if (ms) statusTimer = setTimeout(() => statusEl.style.display = "none", ms);
-    }
 
-    // ── Minimizar / restaurar ─────────────────────────
-    minBtn.addEventListener("click", () => {
-      card.classList.add("dg-hidden");
-      fab.classList.add("show");
-    });
-    fab.addEventListener("click", () => {
-      card.classList.remove("dg-hidden");
-      fab.classList.remove("show");
-    });
-
-    // ══════════════ ESTILO DHL DENTRO DO SHADOW DOM ═══
-    // O df-messenger usa shadow DOM; injetamos <style> em cada
-    // nível para reproduzir o layout: fundo bege, balões brancos,
-    // input arredondado e botão de enviar vermelho.
-
-    function injectStyle(root, id, css) {
-      if (!root || root.querySelector("#" + id)) return;
-      const s = document.createElement("style");
-      s.id = id;
-      s.textContent = css;
-      root.appendChild(s);
-    }
-
-    function styleMessenger() {
-      const df = document.querySelector("df-messenger");
-      if (!df || !df.shadowRoot) return false;
-
-      // Nível 1: df-messenger — esconde o balão flutuante nativo
-      // e faz a janela preencher o card
-      injectStyle(df.shadowRoot, "dhl-root", `
-        #widgetIcon { display: none !important; }
-        df-messenger-chat {
-          position: absolute !important;
-          inset: 0 !important;
-          width: 100% !important;
-          height: 100% !important;
-          max-height: none !important;
-          border-radius: 0 !important;
-        }
-      `);
-
-      const chat = df.shadowRoot.querySelector("df-messenger-chat");
-      if (!chat || !chat.shadowRoot) return false;
-
-      // Nível 2: janela do chat — remove titlebar nativa (o header
-      // customizado já está acima) e aplica fundo creme
-      injectStyle(chat.shadowRoot, "dhl-chat", `
-        .chat-wrapper {
-          border-radius: 0 !important;
-          box-shadow: none !important;
-          height: 100% !important;
-          background: #FBF3DC !important;
-        }
-        df-messenger-titlebar { display: none !important; }
-      `);
-
-      // Nível 3: lista de mensagens — balões e scrollbar
-      const list = chat.shadowRoot.querySelector("df-message-list");
-      if (list && list.shadowRoot) {
-        injectStyle(list.shadowRoot, "dhl-list", `
-          .message-list-wrapper {
-            background: #FBF3DC !important;
-            padding: 14px 12px !important;
-          }
-          .message {
-            border-radius: 18px !important;
-            box-shadow: 0 3px 10px rgba(0,0,0,.08) !important;
-            font-family: "Segoe UI", Arial, sans-serif !important;
-            font-size: 14.5px !important;
-            line-height: 1.5 !important;
-            padding: 12px 16px !important;
-            max-width: 82% !important;
-          }
-          .bot-message {
-            background: #FFFFFF !important;
-            color: #1a1a1a !important;
-          }
-          .user-message {
-            background: #D40511 !important;
-            color: #FFFFFF !important;
-          }
-          /* avatar do bot: círculo amarelo */
-          .avatar, img.avatar {
-            background: #FFCC00 !important;
-            border-radius: 50% !important;
-            padding: 3px !important;
-          }
-          /* scrollbar amarela */
-          .message-list-wrapper::-webkit-scrollbar { width: 10px; }
-          .message-list-wrapper::-webkit-scrollbar-track { background: transparent; }
-          .message-list-wrapper::-webkit-scrollbar-thumb {
-            background: #FFCC00;
-            border-radius: 8px;
-            border: 2px solid #FBF3DC;
-          }
-        `);
+      if (ms) {
+        statusTimer = setTimeout(() => {
+          statusEl.style.display = "none";
+        }, ms);
       }
 
-      // Nível 4: campo de entrada — barra branca, input arredondado,
-      // botão de enviar vermelho
-      const ui = chat.shadowRoot.querySelector("df-messenger-user-input");
-      if (ui && ui.shadowRoot) {
-        injectStyle(ui.shadowRoot, "dhl-input", `
-          .input-box-wrapper, div {
-            background: #FFFFFF !important;
-          }
-          .input-box-wrapper {
-            border-top: 3px solid #FFCC00 !important;
-            padding: 12px 14px !important;
-          }
-          input {
-            background: #FFFFFF !important;
-            border: 1.5px solid #C9C9C9 !important;
-            border-radius: 12px !important;
-            padding: 10px 14px !important;
-            font-family: "Segoe UI", Arial, sans-serif !important;
-            font-size: 14px !important;
-            color: #1a1a1a !important;
-          }
-          input::placeholder {
-            font-style: italic !important;
-            color: #9a9a9a !important;
-          }
-          input:focus {
-            outline: none !important;
-            border-color: #D40511 !important;
-          }
-          /* botão de enviar */
-          #sendIcon, .send-icon, button svg, svg {
-            fill: #FFFFFF !important;
-            color: #FFFFFF !important;
-          }
-          button {
-            background: #D40511 !important;
-            border-radius: 12px !important;
-            width: 44px !important;
-            height: 42px !important;
-            margin-left: 8px !important;
-          }
-        `);
-        // placeholder no idioma atual
-        const inp = ui.shadowRoot.querySelector("input");
-        if (inp) inp.placeholder = UI_TEXT[currentLang].placeholder;
-      }
-
-      return !!(list && ui);
     }
 
-    // O shadow DOM demora a montar: tenta várias vezes
-    function styleWithRetries(tries = 30) {
-      openChat();
-      const t = setInterval(() => {
-        if (styleMessenger() || --tries <= 0) clearInterval(t);
-      }, 300);
-    }
 
-    // ── Encontra o campo de texto dentro do df-messenger ──
+    // ══════════════════════════════════════════════════
+    // ENCONTRA O INPUT DO DIALOGFLOW
+    // ══════════════════════════════════════════════════
+
     function getDfInput() {
+
       try {
-        const df = document.querySelector("df-messenger");
-        const chat = df.shadowRoot.querySelector("df-messenger-chat");
-        const uiRoot = chat.shadowRoot.querySelector("df-messenger-user-input");
-        return uiRoot.shadowRoot.querySelector("input");
-      } catch (e) { return null; }
+
+        const dfMessenger =
+          document.querySelector("df-messenger");
+
+        const chat =
+          dfMessenger.shadowRoot
+            .querySelector("df-messenger-chat");
+
+        const uiRoot =
+          chat.shadowRoot
+            .querySelector("df-messenger-user-input");
+
+        return uiRoot.shadowRoot
+          .querySelector("input");
+
+      } catch (e) {
+
+        return null;
+
+      }
+
     }
 
-    // ── Abre a janela do chat se estiver fechada ──────
+
+    // ══════════════════════════════════════════════════
+    // ABRE O CHAT
+    // ══════════════════════════════════════════════════
+
     function openChat() {
+
       try {
-        const df = document.querySelector("df-messenger");
+
+        const dfMessenger =
+          document.querySelector("df-messenger");
+
         if (!getDfInput()) {
-          df.shadowRoot.querySelector("#widgetIcon")?.click();
+
+          dfMessenger.shadowRoot
+            .querySelector("#widgetIcon")
+            ?.click();
+
         }
-      } catch (e) { /* silencioso */ }
+
+      } catch (e) {
+        /* silencioso */
+      }
+
     }
 
-    // ── Envia texto como se o usuário tivesse digitado ──
+
+    // ══════════════════════════════════════════════════
+    // ENVIA TEXTO AO BOT
+    // ══════════════════════════════════════════════════
+
     function sendToBot(text) {
+
       openChat();
+
       setTimeout(() => {
+
         const input = getDfInput();
+
         if (!input) return;
+
         input.value = text;
-        input.dispatchEvent(new Event("input", { bubbles: true }));
-        input.dispatchEvent(new KeyboardEvent("keydown", {
-          key: "Enter", code: "Enter", keyCode: 13, which: 13, bubbles: true
-        }));
+
+        input.dispatchEvent(
+          new Event(
+            "input",
+            { bubbles: true }
+          )
+        );
+
+        input.dispatchEvent(
+          new KeyboardEvent(
+            "keydown",
+            {
+              key: "Enter",
+              code: "Enter",
+              keyCode: 13,
+              which: 13,
+              bubbles: true
+            }
+          )
+        );
+
       }, 400);
+
     }
 
-    // ══════════════════ MICROFONE ═════════════════════
+
+    // ══════════════════════════════════════════════════
+    // MICROFONE
+    // ══════════════════════════════════════════════════
+
     function setupRecognition() {
-      const SR = window.SpeechRecognition || window.webkitSpeechRecognition;
-      if (!SR) { micBtn.style.display = "none"; return; }
+
+      const SR =
+        window.SpeechRecognition ||
+        window.webkitSpeechRecognition;
+
+
+      if (!SR) {
+
+        micBtn.style.display = "none";
+
+        return;
+
+      }
+
 
       recognition = new SR();
-      recognition.lang = (currentLang === "pt-br") ? "pt-BR" : "en-US";
+
+
+      recognition.lang =
+        (currentLang === "pt-br")
+          ? "pt-BR"
+          : "en-US";
+
+
       recognition.interimResults = false;
+
       recognition.maxAlternatives = 1;
 
+
       recognition.onstart = () => {
+
         isListening = true;
+
         micBtn.classList.add("listening");
-        showStatus(UI_TEXT[currentLang].listening, 0);
+
+        showStatus(
+          UI_TEXT[currentLang].listening,
+          0
+        );
+
       };
-      recognition.onresult = (e) => sendToBot(e.results[0][0].transcript);
+
+
+      recognition.onresult = (e) => {
+
+        const text =
+          e.results[0][0].transcript;
+
+        sendToBot(text);
+
+      };
+
+
       recognition.onerror = (e) => {
-        if (e.error === "not-allowed") showStatus(UI_TEXT[currentLang].micDenied);
+
+        if (e.error === "not-allowed") {
+
+          showStatus(
+            UI_TEXT[currentLang].micDenied
+          );
+
+        }
+
       };
+
+
       recognition.onend = () => {
+
         isListening = false;
+
         micBtn.classList.remove("listening");
+
         statusEl.style.display = "none";
+
       };
+
     }
+
 
     micBtn.addEventListener("click", () => {
-      if (!recognition) { showStatus(UI_TEXT[currentLang].noMic); return; }
-      if (isListening) { recognition.stop(); return; }
+
+      if (!recognition) {
+
+        showStatus(
+          UI_TEXT[currentLang].noMic
+        );
+
+        return;
+
+      }
+
+
+      if (isListening) {
+
+        recognition.stop();
+
+        return;
+
+      }
+
+
       window.speechSynthesis.cancel();
+
       recognition.start();
+
     });
 
-    // ══════════════ LEITURA EM VOZ ALTA ═══════════════
+
+    // ══════════════════════════════════════════════════
+    // LEITURA EM VOZ ALTA
+    // ══════════════════════════════════════════════════
+
     function cleanForSpeech(text) {
+
       return (text || "")
-        .replace(/<[^>]*>/g, " ")
-        .replace(/https?:\/\/\S+/g, "")
-        .replace(/[\u{1F300}-\u{1FAFF}\u{2600}-\u{27BF}]/gu, "")
-        .replace(/\s+/g, " ")
+
+        .replace(
+          /<[^>]*>/g,
+          " "
+        )
+
+        .replace(
+          /https?:\/\/\S+/g,
+          ""
+        )
+
+        .replace(
+          /[\u{1F300}-\u{1FAFF}\u{2600}-\u{27BF}]/gu,
+          ""
+        )
+
+        .replace(
+          /\s+/g,
+          " "
+        )
+
         .trim();
+
     }
+
 
     function pickVoice(langCode) {
-      const voices = window.speechSynthesis.getVoices();
-      const prefix = (langCode === "pt-br") ? "pt" : "en";
-      return voices.find(v => v.lang.toLowerCase().startsWith(prefix) && /natural|google/i.test(v.name))
-          || voices.find(v => v.lang.toLowerCase().startsWith(prefix))
-          || null;
+
+      const voices =
+        window.speechSynthesis.getVoices();
+
+
+      const prefix =
+        (langCode === "pt-br")
+          ? "pt"
+          : "en";
+
+
+      return (
+
+        voices.find(
+          v =>
+            v.lang
+              .toLowerCase()
+              .startsWith(prefix)
+            &&
+            /natural|google/i.test(v.name)
+        )
+
+        ||
+
+        voices.find(
+          v =>
+            v.lang
+              .toLowerCase()
+              .startsWith(prefix)
+        )
+
+        ||
+
+        null
+
+      );
+
     }
+
 
     function speak(text) {
-      const clean = cleanForSpeech(text);
+
+      const clean =
+        cleanForSpeech(text);
+
+
       if (!clean) return;
+
+
       window.speechSynthesis.cancel();
-      const utter = new SpeechSynthesisUtterance(clean);
-      utter.lang = (currentLang === "pt-br") ? "pt-BR" : "en-US";
-      const voice = pickVoice(currentLang);
-      if (voice) utter.voice = voice;
+
+
+      const utter =
+        new SpeechSynthesisUtterance(clean);
+
+
+      utter.lang =
+        (currentLang === "pt-br")
+          ? "pt-BR"
+          : "en-US";
+
+
+      const voice =
+        pickVoice(currentLang);
+
+
+      if (voice) {
+        utter.voice = voice;
+      }
+
+
       utter.rate = 1.0;
+
+
       window.speechSynthesis.speak(utter);
+
     }
-    window.speechSynthesis.onvoiceschanged = () => {};
+
+
+    window.speechSynthesis.onvoiceschanged =
+      () => {};
+
 
     ttsBtn.addEventListener("click", () => {
+
       ttsEnabled = !ttsEnabled;
-      ttsBtn.classList.toggle("off", !ttsEnabled);
-      ttsBtn.textContent = ttsEnabled ? "🔊" : "🔇";
-      if (!ttsEnabled) window.speechSynthesis.cancel();
-      showStatus(ttsEnabled ? UI_TEXT[currentLang].ttsOn : UI_TEXT[currentLang].ttsOff);
+
+
+      ttsBtn.classList.toggle(
+        "off",
+        !ttsEnabled
+      );
+
+
+      ttsBtn.textContent =
+        ttsEnabled
+          ? "🔊"
+          : "🔇";
+
+
+      if (!ttsEnabled) {
+
+        window.speechSynthesis.cancel();
+
+      }
+
+
+      showStatus(
+
+        ttsEnabled
+
+          ? UI_TEXT[currentLang].ttsOn
+
+          : UI_TEXT[currentLang].ttsOff
+
+      );
+
     });
+
+
+    // ══════════════════════════════════════════════════
+    // LÊ RESPOSTAS DO BOT
+    // ══════════════════════════════════════════════════
 
     function attachResponseListener() {
-      const df = document.querySelector("df-messenger");
-      if (!df) return;
-      df.addEventListener("df-response-received", (event) => {
-        if (!ttsEnabled) return;
-        const qr = event.detail?.response?.queryResult;
-        if (!qr) return;
-        let text = qr.fulfillmentText || "";
-        if (!text && Array.isArray(qr.fulfillmentMessages)) {
-          text = qr.fulfillmentMessages.map(m => m.text?.text?.join(" ") || "").join(" ");
+
+      const dfMessenger =
+        document.querySelector("df-messenger");
+
+
+      if (!dfMessenger) return;
+
+
+      dfMessenger.addEventListener(
+        "df-response-received",
+        (event) => {
+
+          if (!ttsEnabled) return;
+
+
+          const qr =
+            event.detail
+              ?.response
+              ?.queryResult;
+
+
+          if (!qr) return;
+
+
+          let text =
+            qr.fulfillmentText || "";
+
+
+          if (
+            !text &&
+            Array.isArray(
+              qr.fulfillmentMessages
+            )
+          ) {
+
+            text =
+              qr.fulfillmentMessages
+
+                .map(
+                  m =>
+                    m.text
+                      ?.text
+                      ?.join(" ")
+                    ||
+                    ""
+                )
+
+                .join(" ");
+
+          }
+
+
+          speak(text);
+
         }
-        speak(text);
-      });
+      );
+
     }
 
-    // ══════════════ TROCA DE IDIOMA ═══════════════════
+
+    // ══════════════════════════════════════════════════
+    // TROCA DE IDIOMA
+    // ══════════════════════════════════════════════════
+
     function rebuildMessenger(langCode) {
-      const container = document.getElementById("dg-container");
+
+      const container =
+        document.getElementById(
+          "dg-container"
+        );
+
+
       container.innerHTML = "";
-      const df = document.createElement("df-messenger");
-      df.setAttribute("intent", "WELCOME");
-      df.setAttribute("chat-title", "DGuardian");
-      df.setAttribute("agent-id", AGENT_ID);
-      df.setAttribute("language-code", langCode);
-      df.setAttribute("chat-icon", CHAT_ICON);
+
+
+      const df =
+        document.createElement(
+          "df-messenger"
+        );
+
+
+      df.setAttribute(
+        "intent",
+        "WELCOME"
+      );
+
+
+      df.setAttribute(
+        "chat-title",
+        UI_TEXT[langCode].title
+      );
+
+
+      df.setAttribute(
+        "agent-id",
+        AGENT_ID
+      );
+
+
+      df.setAttribute(
+        "language-code",
+        langCode
+      );
+
+
+      df.setAttribute(
+        "chat-icon",
+        CHAT_ICON
+      );
+
+
       container.appendChild(df);
+
+
       attachResponseListener();
-      // subtítulo do header acompanha o idioma
-      document.querySelector("#dg-header .dg-title span").textContent = UI_TEXT[langCode].subtitle;
-      setTimeout(() => styleWithRetries(), 600);
+
+
+      /* Reaplica visual após recriar o chat */
+      setTimeout(
+        applyPremiumVisual,
+        800
+      );
+
     }
 
-    langSel.addEventListener("change", () => {
-      currentLang = langSel.value;
-      window.speechSynthesis.cancel();
-      if (recognition) recognition.lang = (currentLang === "pt-br") ? "pt-BR" : "en-US";
-      rebuildMessenger(currentLang);
-      showStatus(UI_TEXT[currentLang].langChanged, 4000);
-    });
 
-    // ══════════════ INICIALIZAÇÃO ═════════════════════
-    window.addEventListener("dfMessengerLoaded", () => {
-      attachResponseListener();
-      styleWithRetries();
-    });
+    langSel.addEventListener(
+      "change",
+      () => {
+
+        currentLang =
+          langSel.value;
+
+
+        window.speechSynthesis.cancel();
+
+
+        if (recognition) {
+
+          recognition.lang =
+            (currentLang === "pt-br")
+              ? "pt-BR"
+              : "en-US";
+
+        }
+
+
+        rebuildMessenger(currentLang);
+
+
+        showStatus(
+          UI_TEXT[currentLang].langChanged,
+          4000
+        );
+
+      }
+    );
+
+
+    // ══════════════════════════════════════════════════
+    // VISUAL PREMIUM
+    // Apenas aparência
+    // Não altera lógica do bot
+    // ══════════════════════════════════════════════════
+
+    function applyPremiumVisual() {
+
+      try {
+
+        const df =
+          document.querySelector(
+            "df-messenger"
+          );
+
+
+        if (!df || !df.shadowRoot) {
+          return;
+        }
+
+
+        /* ──────────────────────────────────────────────
+           ÍCONE FLUTUANTE
+           ────────────────────────────────────────────── */
+
+        const widgetIcon =
+          df.shadowRoot.querySelector(
+            "#widgetIcon"
+          );
+
+
+        if (widgetIcon) {
+
+          widgetIcon.style.width =
+            "58px";
+
+          widgetIcon.style.height =
+            "58px";
+
+          widgetIcon.style.borderRadius =
+            "50%";
+
+          widgetIcon.style.backgroundColor =
+            "#FFCC00";
+
+          widgetIcon.style.boxShadow =
+            "0 10px 28px rgba(0,0,0,.24)";
+
+          widgetIcon.style.border =
+            "3px solid #FFFFFF";
+
+          widgetIcon.style.transition =
+            "transform .18s ease, box-shadow .18s ease";
+
+        }
+
+
+        /* ──────────────────────────────────────────────
+           CHAT
+           ────────────────────────────────────────────── */
+
+        const chat =
+          df.shadowRoot.querySelector(
+            "df-messenger-chat"
+          );
+
+
+        if (!chat || !chat.shadowRoot) {
+          return;
+        }
+
+
+        /* Injeta CSS no Shadow DOM do chat */
+        if (
+          !chat.shadowRoot.querySelector(
+            "#dg-premium-chat-style"
+          )
+        ) {
+
+          const style =
+            document.createElement("style");
+
+
+          style.id =
+            "dg-premium-chat-style";
+
+
+          style.textContent = `
+
+            :host {
+              font-family:
+                Arial,
+                Helvetica,
+                sans-serif !important;
+            }
+
+            .chat-wrapper,
+            #chat-wrapper {
+              border-radius:
+                22px !important;
+
+              overflow:
+                hidden !important;
+
+              box-shadow:
+                0 18px 48px
+                rgba(0, 0, 0, .24)
+                !important;
+
+              border:
+                1px solid
+                rgba(212, 5, 17, .10)
+                !important;
+            }
+
+            .chat-title,
+            #chat-title,
+            .titlebar,
+            #titlebar {
+              background:
+                linear-gradient(
+                  135deg,
+                  #FFCC00 0%,
+                  #FFD84D 100%
+                )
+                !important;
+
+              color:
+                #D40511
+                !important;
+
+              font-weight:
+                800
+                !important;
+            }
+
+          `;
+
+
+          chat.shadowRoot.appendChild(
+            style
+          );
+
+        }
+
+
+        /* ──────────────────────────────────────────────
+           INPUT
+           ────────────────────────────────────────────── */
+
+        const userInput =
+          chat.shadowRoot.querySelector(
+            "df-messenger-user-input"
+          );
+
+
+        if (
+          userInput &&
+          userInput.shadowRoot
+        ) {
+
+          if (
+            !userInput.shadowRoot.querySelector(
+              "#dg-premium-input-style"
+            )
+          ) {
+
+            const inputStyle =
+              document.createElement(
+                "style"
+              );
+
+
+            inputStyle.id =
+              "dg-premium-input-style";
+
+
+            inputStyle.textContent = `
+
+              :host {
+                background:
+                  #FFFFFF
+                  !important;
+
+                border-top:
+                  1px solid
+                  rgba(212, 5, 17, .10)
+                  !important;
+              }
+
+              input {
+                color:
+                  #191919
+                  !important;
+
+                background:
+                  #FFFFFF
+                  !important;
+
+                font-size:
+                  14px
+                  !important;
+
+                padding:
+                  14px 16px
+                  !important;
+              }
+
+              input::placeholder {
+                color:
+                  #8A8A8A
+                  !important;
+
+                font-style:
+                  italic;
+              }
+
+              button {
+                color:
+                  #D40511
+                  !important;
+              }
+
+            `;
+
+
+            userInput.shadowRoot.appendChild(
+              inputStyle
+            );
+
+          }
+
+        }
+
+
+        /* ──────────────────────────────────────────────
+           MENSAGENS
+           ────────────────────────────────────────────── */
+
+        const bubbles =
+          chat.shadowRoot.querySelectorAll(
+            "message-bubble"
+          );
+
+
+        bubbles.forEach((bubble) => {
+
+          if (!bubble.shadowRoot) return;
+
+
+          if (
+            bubble.shadowRoot.querySelector(
+              "#dg-premium-bubble-style"
+            )
+          ) {
+            return;
+          }
+
+
+          const bubbleStyle =
+            document.createElement(
+              "style"
+            );
+
+
+          bubbleStyle.id =
+            "dg-premium-bubble-style";
+
+
+          bubbleStyle.textContent = `
+
+            .message-bubble,
+            .bubble,
+            div {
+              border-radius:
+                18px
+                !important;
+            }
+
+          `;
+
+
+          bubble.shadowRoot.appendChild(
+            bubbleStyle
+          );
+
+        });
+
+      }
+
+      catch (e) {
+
+        /*
+          Silencioso de propósito.
+          Se o Dialogflow alterar algum elemento interno,
+          o chatbot continua funcionando normalmente.
+        */
+
+      }
+
+    }
+
+
+    // ══════════════════════════════════════════════════
+    // OBSERVADOR VISUAL
+    // Reaplica apenas estilos quando o chat muda
+    // ══════════════════════════════════════════════════
+
+    function startVisualObserver() {
+
+      const observer =
+        new MutationObserver(() => {
+
+          applyPremiumVisual();
+
+        });
+
+
+      observer.observe(
+        document.body,
+        {
+          childList: true,
+          subtree: true
+        }
+      );
+
+    }
+
+
+    // ══════════════════════════════════════════════════
+    // INICIALIZAÇÃO
+    // ══════════════════════════════════════════════════
+
+    window.addEventListener(
+      "dfMessengerLoaded",
+      () => {
+
+        attachResponseListener();
+
+        setTimeout(
+          applyPremiumVisual,
+          500
+        );
+
+        setTimeout(
+          applyPremiumVisual,
+          1200
+        );
+
+      }
+    );
+
+
     setupRecognition();
+
+    startVisualObserver();
+
   </script>
+
 </body>
 </html>
