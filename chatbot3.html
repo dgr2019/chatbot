@@ -3,313 +3,195 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>DGuardian</title>
 
-  <title>DGuardian - Especialista Internacional</title>
-
-  <!-- Dialogflow Messenger -->
   <script src="https://www.gstatic.com/dialogflow-console/fast/messenger/bootstrap.js?v=1"></script>
 
   <style>
-    /* ══════════════════════════════════════════════════
-       DGUARDIAN — NOVO VISUAL DHL
-       Apenas alterações visuais
-       ══════════════════════════════════════════════════ */
-
     :root {
       --dhl-red: #D40511;
-      --dhl-red-dark: #B0000B;
       --dhl-yellow: #FFCC00;
-      --dhl-yellow-light: #FFE57A;
-      --dhl-cream: #FFF9E8;
-      --dhl-white: #FFFFFF;
-      --dhl-black: #191919;
-      --dhl-gray: #747474;
-      --dhl-border: #E5E5E5;
-    }
-
-    * {
-      box-sizing: border-box;
+      --dhl-cream: #FFF8E6;
+      --text-dark: #191919;
     }
 
     body {
       margin: 0;
       min-height: 100vh;
-      background:
-        radial-gradient(
-          circle at center,
-          #FFFFFF 0%,
-          #F5F5F5 52%,
-          #E8E8E8 100%
-        );
+      background: radial-gradient(circle, #ffffff 0%, #f2f2f2 55%, #e5e5e5 100%);
       font-family: Arial, Helvetica, sans-serif;
     }
 
-    /* ══════════════════════════════════════════════════
-       DIALOGFLOW MESSENGER
-       ══════════════════════════════════════════════════ */
-
     df-messenger {
-      --df-messenger-bot-message: #FFFFFF !important;
+      --df-messenger-bot-message: #ffffff !important;
       --df-messenger-bot-message-font-color: #191919 !important;
-
       --df-messenger-user-message: #D40511 !important;
-      --df-messenger-user-message-font-color: #FFFFFF !important;
-
-      --df-messenger-chat-background-color: #FFF9E8 !important;
-
+      --df-messenger-user-message-font-color: #ffffff !important;
+      --df-messenger-chat-background-color: #FFF8E6 !important;
       --df-messenger-button-titlebar-color: #FFCC00 !important;
-      --df-messenger-font-color: #D40511 !important;
-
+      --df-messenger-font-color: transparent !important;
       --df-messenger-send-icon: #D40511 !important;
-
-      --df-messenger-input-box-color: #FFFFFF !important;
+      --df-messenger-input-box-color: #ffffff !important;
       --df-messenger-input-font-color: #191919 !important;
-      --df-messenger-input-placeholder-font-color: #8A8A8A !important;
-
-      --df-messenger-minimized-chat-close-icon-color: #FFFFFF !important;
-
-      --df-messenger-chip-border-color: #D40511 !important;
-      --df-messenger-chip-font-color: #D40511 !important;
+      --df-messenger-input-placeholder-font-color: #888888 !important;
 
       position: fixed;
-      right: 24px;
-      bottom: 24px;
+      right: 70px;
+      bottom: 75px;
       z-index: 998;
-
-      font-family: Arial, Helvetica, sans-serif !important;
     }
 
-    /* ══════════════════════════════════════════════════
-       CUSTOMIZAÇÃO INTERNA DO CHAT
-       Aplicada via Shadow DOM pelo JavaScript
-       ══════════════════════════════════════════════════ */
-
-    /* Mantido como fallback visual */
-    df-messenger-chat message-bubble {
-      background-color: #FFFFFF !important;
-      color: #191919 !important;
-      border-radius: 18px !important;
-      box-shadow: 0 5px 16px rgba(0, 0, 0, 0.10) !important;
+    #dg-custom-header {
+      position: fixed;
+      right: 70px;
+      bottom: 635px;
+      width: 445px;
+      height: 96px;
+      z-index: 1001;
+      background: linear-gradient(135deg, #FFCC00 0%, #FFD84A 100%);
+      border-radius: 24px 24px 0 0;
+      display: flex;
+      align-items: center;
+      padding: 0 28px;
+      box-shadow: 0 8px 24px rgba(0,0,0,.15);
+      pointer-events: none;
+      overflow: hidden;
     }
 
-    /* ══════════════════════════════════════════════════
-       BARRA DE VOZ
-       ══════════════════════════════════════════════════ */
+    #dg-custom-header::after {
+      content: "";
+      position: absolute;
+      right: 34px;
+      top: 12px;
+      width: 160px;
+      height: 70px;
+      background:
+        linear-gradient(135deg, rgba(255,255,255,.25) 0 20%, transparent 20% 100%),
+        linear-gradient(135deg, transparent 0 35%, rgba(255,255,255,.18) 35% 55%, transparent 55% 100%);
+      opacity: .7;
+    }
+
+    #dg-custom-header img {
+      width: 150px;
+      height: auto;
+      margin-right: 26px;
+      position: relative;
+      z-index: 2;
+    }
+
+    #dg-custom-header .divider {
+      width: 2px;
+      height: 54px;
+      background: var(--dhl-red);
+      margin-right: 24px;
+      position: relative;
+      z-index: 2;
+    }
+
+    #dg-custom-header .title {
+      position: relative;
+      z-index: 2;
+      color: var(--dhl-red);
+      font-size: 27px;
+      font-weight: 800;
+      line-height: 1.1;
+    }
+
+    #dg-custom-header .subtitle {
+      color: #191919;
+      font-size: 16px;
+      font-weight: 400;
+      margin-top: 6px;
+    }
 
     #dg-voice-bar {
       position: fixed;
       bottom: 24px;
-      right: 100px;
-
+      right: 150px;
       display: flex;
       align-items: center;
       gap: 10px;
-
       z-index: 999;
-
-      font-family: Arial, Helvetica, sans-serif;
     }
 
-    /* Botões redondos */
     .dg-btn {
-      width: 52px;
-      height: 52px;
-
-      border: 2px solid #FFFFFF;
+      width: 58px;
+      height: 58px;
+      border: 3px solid #ffffff;
       border-radius: 50%;
-
-      background:
-        linear-gradient(
-          135deg,
-          #D40511 0%,
-          #B0000B 100%
-        );
-
-      color: #FFFFFF;
-
-      font-size: 20px;
-
+      background: #D40511;
+      color: #ffffff;
+      font-size: 21px;
       cursor: pointer;
-
-      box-shadow:
-        0 8px 22px rgba(0, 0, 0, 0.22),
-        0 2px 6px rgba(212, 5, 17, 0.22);
-
+      box-shadow: 0 8px 22px rgba(0,0,0,.28);
       display: flex;
       align-items: center;
       justify-content: center;
-
-      transition:
-        transform 0.18s ease,
-        box-shadow 0.18s ease,
-        background 0.2s ease;
+      transition: .2s;
     }
 
     .dg-btn:hover {
-      transform: translateY(-2px) scale(1.05);
-
-      box-shadow:
-        0 12px 28px rgba(0, 0, 0, 0.26),
-        0 3px 10px rgba(212, 5, 17, 0.25);
+      transform: translateY(-2px) scale(1.04);
     }
 
-    .dg-btn:active {
-      transform: scale(0.97);
-    }
-
-    .dg-btn:focus-visible {
-      outline: 3px solid #FFCC00;
-      outline-offset: 3px;
-    }
-
-    /* TTS desligado */
     .dg-btn.off {
-      background:
-        linear-gradient(
-          135deg,
-          #8A8A8A 0%,
-          #555555 100%
-        );
+      background: #777777;
     }
 
-    /* Microfone ouvindo */
     .dg-btn.listening {
-      background:
-        linear-gradient(
-          135deg,
-          #FFCC00 0%,
-          #FFE680 100%
-        );
-
+      background: #FFCC00;
       color: #D40511;
-
       animation: dg-pulse 1s infinite;
     }
 
     @keyframes dg-pulse {
-      0% {
-        box-shadow:
-          0 0 0 0 rgba(212, 5, 17, 0.48);
-      }
-
-      70% {
-        box-shadow:
-          0 0 0 16px rgba(212, 5, 17, 0);
-      }
-
-      100% {
-        box-shadow:
-          0 0 0 0 rgba(212, 5, 17, 0);
-      }
+      0% { box-shadow: 0 0 0 0 rgba(212,5,17,.45); }
+      70% { box-shadow: 0 0 0 16px rgba(212,5,17,0); }
+      100% { box-shadow: 0 0 0 0 rgba(212,5,17,0); }
     }
-
-    /* ══════════════════════════════════════════════════
-       SELETOR DE IDIOMA
-       ══════════════════════════════════════════════════ */
 
     #dg-lang {
-      height: 52px;
-
+      height: 58px;
       border: 2px solid #FFCC00;
-      border-radius: 28px;
-
-      background: #FFFFFF;
+      border-radius: 30px;
+      background: #ffffff;
       color: #D40511;
-
       font-weight: 800;
       font-size: 14px;
-
-      padding: 0 16px;
-
+      padding: 0 18px;
       cursor: pointer;
-
-      box-shadow:
-        0 8px 22px rgba(0, 0, 0, 0.16);
-
-      transition:
-        transform 0.18s ease,
-        box-shadow 0.18s ease,
-        border-color 0.18s ease;
+      box-shadow: 0 8px 22px rgba(0,0,0,.20);
     }
-
-    #dg-lang:hover {
-      transform: translateY(-2px);
-
-      border-color: #D40511;
-
-      box-shadow:
-        0 12px 26px rgba(0, 0, 0, 0.20);
-    }
-
-    #dg-lang:focus-visible {
-      outline: 3px solid #FFCC00;
-      outline-offset: 3px;
-    }
-
-    /* ══════════════════════════════════════════════════
-       STATUS
-       ══════════════════════════════════════════════════ */
 
     #dg-status {
       position: fixed;
-
-      bottom: 88px;
-      right: 100px;
-
+      bottom: 92px;
+      right: 150px;
       background: #191919;
       color: #FFCC00;
-
-      font-family: Arial, Helvetica, sans-serif;
       font-size: 13px;
-      font-weight: 700;
-
-      padding: 9px 15px;
-
+      font-weight: bold;
+      padding: 8px 14px;
       border-radius: 16px;
-
       z-index: 999;
-
       display: none;
-
-      box-shadow:
-        0 8px 24px rgba(0, 0, 0, 0.24);
-
-      border:
-        1px solid rgba(255, 204, 0, 0.20);
     }
 
-    /* ══════════════════════════════════════════════════
-       RESPONSIVIDADE
-       ══════════════════════════════════════════════════ */
-
-    @media (max-width: 600px) {
-      #dg-voice-bar {
-        right: 82px;
-        bottom: 18px;
-        gap: 6px;
-      }
-
-      .dg-btn {
-        width: 44px;
-        height: 44px;
-        font-size: 17px;
-      }
-
-      #dg-lang {
-        height: 44px;
-        padding: 0 10px;
-        font-size: 12px;
-      }
-
-      #dg-status {
-        right: 18px;
-        bottom: 76px;
-        max-width: calc(100vw - 36px);
-      }
-
+    @media (max-width: 700px) {
       df-messenger {
-        right: 18px;
-        bottom: 18px;
+        right: 28px;
+        bottom: 88px;
+      }
+
+      #dg-custom-header {
+        right: 28px;
+        bottom: 648px;
+        width: 445px;
+      }
+
+      #dg-voice-bar {
+        right: 70px;
+        bottom: 22px;
       }
     }
   </style>
@@ -317,56 +199,28 @@
 
 <body>
 
-  <!-- ══════════════════════════════════════════════════
-       STATUS DE VOZ
-       ══════════════════════════════════════════════════ -->
+  <div id="dg-custom-header">
+    <img src="logo-dhl.png" alt="DHL">
+    <div class="divider"></div>
+    <div>
+      <div class="title">DGuardian</div>
+      <div class="subtitle">Especialista Internacional</div>
+    </div>
+  </div>
 
   <div id="dg-status"></div>
 
-
-  <!-- ══════════════════════════════════════════════════
-       CONTROLES DE VOZ
-       Funcionalidades mantidas
-       ══════════════════════════════════════════════════ -->
-
   <div id="dg-voice-bar">
-
-    <select
-      id="dg-lang"
-      title="Idioma / Language"
-      aria-label="Idioma do chatbot"
-    >
+    <select id="dg-lang" title="Idioma / Language" aria-label="Idioma do chatbot">
       <option value="pt-br" selected>🇧🇷 PT</option>
       <option value="en">🇺🇸 EN</option>
     </select>
 
-    <button
-      id="dg-tts"
-      class="dg-btn"
-      title="Ouvir respostas do bot"
-      aria-label="Ativar ou desativar leitura em voz alta"
-    >
-      🔊
-    </button>
-
-    <button
-      id="dg-mic"
-      class="dg-btn"
-      title="Falar com a DGuardian"
-      aria-label="Falar com a DGuardian pelo microfone"
-    >
-      🎤
-    </button>
-
+    <button id="dg-tts" class="dg-btn" title="Ouvir respostas do bot" aria-label="Ativar ou desativar leitura em voz alta">🔊</button>
+    <button id="dg-mic" class="dg-btn" title="Falar com a DGuardian" aria-label="Falar com a DGuardian pelo microfone">🎤</button>
   </div>
 
-
-  <!-- ══════════════════════════════════════════════════
-       CONTAINER DO CHAT
-       ══════════════════════════════════════════════════ -->
-
   <div id="dg-container">
-
     <df-messenger
       intent="WELCOME"
       chat-title="DGuardian"
@@ -374,1006 +228,239 @@
       language-code="pt-br"
       chat-icon="https://dgr2019.github.io/chatbot/dguardian-logo.png">
     </df-messenger>
-
   </div>
 
-
   <script>
-    // ══════════════════════════════════════════════════
-    // DGUARDIAN
-    // Funcionalidades originais preservadas:
-    // - Microfone
-    // - TTS
-    // - PT-BR / EN
-    // - Dialogflow
-    // ══════════════════════════════════════════════════
-
-
-    const AGENT_ID =
-      "0e08ef10-1d77-401e-a0ff-e49389d31ded";
-
-    const CHAT_ICON =
-      "https://dgr2019.github.io/chatbot/dguardian-logo.png";
-
+    const AGENT_ID  = "0e08ef10-1d77-401e-a0ff-e49389d31ded";
+    const CHAT_ICON = "https://dgr2019.github.io/chatbot/dguardian-logo.png";
 
     const UI_TEXT = {
-
       "pt-br": {
         title: "DGuardian",
-
-        listening:
-          "Ouvindo... pode falar 🎤",
-
-        noMic:
-          "Seu navegador não suporta reconhecimento de voz. Use o Chrome ou o Edge.",
-
-        micDenied:
-          "Permita o acesso ao microfone nas configurações do navegador.",
-
-        ttsOn:
-          "Leitura em voz alta ativada 🔊",
-
-        ttsOff:
-          "Leitura em voz alta desativada 🔇",
-
-        langChanged:
-          "Idioma alterado para Português. A conversa foi reiniciada."
+        listening: "Ouvindo... pode falar 🎤",
+        noMic: "Seu navegador não suporta reconhecimento de voz. Use o Chrome ou o Edge.",
+        micDenied: "Permita o acesso ao microfone nas configurações do navegador.",
+        ttsOn: "Leitura em voz alta ativada 🔊",
+        ttsOff: "Leitura em voz alta desativada 🔇",
+        langChanged: "Idioma alterado para Português. A conversa foi reiniciada."
       },
-
-
       "en": {
         title: "DGuardian",
-
-        listening:
-          "Listening... go ahead 🎤",
-
-        noMic:
-          "Your browser does not support speech recognition. Please use Chrome or Edge.",
-
-        micDenied:
-          "Please allow microphone access in your browser settings.",
-
-        ttsOn:
-          "Read-aloud enabled 🔊",
-
-        ttsOff:
-          "Read-aloud disabled 🔇",
-
-        langChanged:
-          "Language switched to English. The conversation was restarted."
+        listening: "Listening... go ahead 🎤",
+        noMic: "Your browser does not support speech recognition. Please use Chrome or Edge.",
+        micDenied: "Please allow microphone access in your browser settings.",
+        ttsOn: "Read-aloud enabled 🔊",
+        ttsOff: "Read-aloud disabled 🔇",
+        langChanged: "Language switched to English. The conversation was restarted."
       }
-
     };
 
-
     let currentLang = "pt-br";
-    let ttsEnabled = true;
+    let ttsEnabled  = true;
     let recognition = null;
     let isListening = false;
 
-
-    const micBtn =
-      document.getElementById("dg-mic");
-
-    const ttsBtn =
-      document.getElementById("dg-tts");
-
-    const langSel =
-      document.getElementById("dg-lang");
-
-    const statusEl =
-      document.getElementById("dg-status");
-
-
-    // ══════════════════════════════════════════════════
-    // STATUS RÁPIDO
-    // ══════════════════════════════════════════════════
+    const micBtn   = document.getElementById("dg-mic");
+    const ttsBtn   = document.getElementById("dg-tts");
+    const langSel  = document.getElementById("dg-lang");
+    const statusEl = document.getElementById("dg-status");
 
     let statusTimer = null;
 
     function showStatus(msg, ms = 3000) {
-
       statusEl.textContent = msg;
-
       statusEl.style.display = "block";
-
       clearTimeout(statusTimer);
-
-      if (ms) {
-        statusTimer = setTimeout(() => {
-          statusEl.style.display = "none";
-        }, ms);
-      }
-
+      if (ms) statusTimer = setTimeout(() => statusEl.style.display = "none", ms);
     }
-
-
-    // ══════════════════════════════════════════════════
-    // ENCONTRA O INPUT DO DIALOGFLOW
-    // ══════════════════════════════════════════════════
 
     function getDfInput() {
-
       try {
-
-        const dfMessenger =
-          document.querySelector("df-messenger");
-
-        const chat =
-          dfMessenger.shadowRoot
-            .querySelector("df-messenger-chat");
-
-        const uiRoot =
-          chat.shadowRoot
-            .querySelector("df-messenger-user-input");
-
-        return uiRoot.shadowRoot
-          .querySelector("input");
-
+        const dfMessenger = document.querySelector("df-messenger");
+        const chat  = dfMessenger.shadowRoot.querySelector("df-messenger-chat");
+        const uiRoot = chat.shadowRoot.querySelector("df-messenger-user-input");
+        return uiRoot.shadowRoot.querySelector("input");
       } catch (e) {
-
         return null;
-
       }
-
     }
-
-
-    // ══════════════════════════════════════════════════
-    // ABRE O CHAT
-    // ══════════════════════════════════════════════════
 
     function openChat() {
-
       try {
-
-        const dfMessenger =
-          document.querySelector("df-messenger");
-
+        const dfMessenger = document.querySelector("df-messenger");
         if (!getDfInput()) {
-
-          dfMessenger.shadowRoot
-            .querySelector("#widgetIcon")
-            ?.click();
-
+          dfMessenger.shadowRoot.querySelector("#widgetIcon")?.click();
         }
-
-      } catch (e) {
-        /* silencioso */
-      }
-
+      } catch (e) {}
     }
 
-
-    // ══════════════════════════════════════════════════
-    // ENVIA TEXTO AO BOT
-    // ══════════════════════════════════════════════════
-
     function sendToBot(text) {
-
       openChat();
 
       setTimeout(() => {
-
         const input = getDfInput();
-
         if (!input) return;
 
         input.value = text;
-
-        input.dispatchEvent(
-          new Event(
-            "input",
-            { bubbles: true }
-          )
-        );
-
-        input.dispatchEvent(
-          new KeyboardEvent(
-            "keydown",
-            {
-              key: "Enter",
-              code: "Enter",
-              keyCode: 13,
-              which: 13,
-              bubbles: true
-            }
-          )
-        );
-
+        input.dispatchEvent(new Event("input", { bubbles: true }));
+        input.dispatchEvent(new KeyboardEvent("keydown", {
+          key: "Enter",
+          code: "Enter",
+          keyCode: 13,
+          which: 13,
+          bubbles: true
+        }));
       }, 400);
-
     }
-
-
-    // ══════════════════════════════════════════════════
-    // MICROFONE
-    // ══════════════════════════════════════════════════
 
     function setupRecognition() {
-
-      const SR =
-        window.SpeechRecognition ||
-        window.webkitSpeechRecognition;
-
+      const SR = window.SpeechRecognition || window.webkitSpeechRecognition;
 
       if (!SR) {
-
         micBtn.style.display = "none";
-
         return;
-
       }
-
 
       recognition = new SR();
-
-
-      recognition.lang =
-        (currentLang === "pt-br")
-          ? "pt-BR"
-          : "en-US";
-
-
+      recognition.lang = currentLang === "pt-br" ? "pt-BR" : "en-US";
       recognition.interimResults = false;
-
       recognition.maxAlternatives = 1;
 
-
       recognition.onstart = () => {
-
         isListening = true;
-
         micBtn.classList.add("listening");
-
-        showStatus(
-          UI_TEXT[currentLang].listening,
-          0
-        );
-
+        showStatus(UI_TEXT[currentLang].listening, 0);
       };
-
 
       recognition.onresult = (e) => {
-
-        const text =
-          e.results[0][0].transcript;
-
+        const text = e.results[0][0].transcript;
         sendToBot(text);
-
       };
-
 
       recognition.onerror = (e) => {
-
-        if (e.error === "not-allowed") {
-
-          showStatus(
-            UI_TEXT[currentLang].micDenied
-          );
-
-        }
-
+        if (e.error === "not-allowed") showStatus(UI_TEXT[currentLang].micDenied);
       };
-
 
       recognition.onend = () => {
-
         isListening = false;
-
         micBtn.classList.remove("listening");
-
         statusEl.style.display = "none";
-
       };
-
     }
-
 
     micBtn.addEventListener("click", () => {
-
       if (!recognition) {
-
-        showStatus(
-          UI_TEXT[currentLang].noMic
-        );
-
+        showStatus(UI_TEXT[currentLang].noMic);
         return;
-
       }
-
 
       if (isListening) {
-
         recognition.stop();
-
         return;
-
       }
 
-
       window.speechSynthesis.cancel();
-
       recognition.start();
-
     });
-
-
-    // ══════════════════════════════════════════════════
-    // LEITURA EM VOZ ALTA
-    // ══════════════════════════════════════════════════
 
     function cleanForSpeech(text) {
-
       return (text || "")
-
-        .replace(
-          /<[^>]*>/g,
-          " "
-        )
-
-        .replace(
-          /https?:\/\/\S+/g,
-          ""
-        )
-
-        .replace(
-          /[\u{1F300}-\u{1FAFF}\u{2600}-\u{27BF}]/gu,
-          ""
-        )
-
-        .replace(
-          /\s+/g,
-          " "
-        )
-
+        .replace(/<[^>]*>/g, " ")
+        .replace(/https?:\/\/\S+/g, "")
+        .replace(/[\u{1F300}-\u{1FAFF}\u{2600}-\u{27BF}]/gu, "")
+        .replace(/\s+/g, " ")
         .trim();
-
     }
-
 
     function pickVoice(langCode) {
+      const voices = window.speechSynthesis.getVoices();
+      const prefix = langCode === "pt-br" ? "pt" : "en";
 
-      const voices =
-        window.speechSynthesis.getVoices();
-
-
-      const prefix =
-        (langCode === "pt-br")
-          ? "pt"
-          : "en";
-
-
-      return (
-
-        voices.find(
-          v =>
-            v.lang
-              .toLowerCase()
-              .startsWith(prefix)
-            &&
-            /natural|google/i.test(v.name)
-        )
-
-        ||
-
-        voices.find(
-          v =>
-            v.lang
-              .toLowerCase()
-              .startsWith(prefix)
-        )
-
-        ||
-
-        null
-
-      );
-
+      return voices.find(v => v.lang.toLowerCase().startsWith(prefix) && /natural|google/i.test(v.name))
+          || voices.find(v => v.lang.toLowerCase().startsWith(prefix))
+          || null;
     }
 
-
     function speak(text) {
-
-      const clean =
-        cleanForSpeech(text);
-
-
+      const clean = cleanForSpeech(text);
       if (!clean) return;
-
 
       window.speechSynthesis.cancel();
 
+      const utter = new SpeechSynthesisUtterance(clean);
+      utter.lang = currentLang === "pt-br" ? "pt-BR" : "en-US";
 
-      const utter =
-        new SpeechSynthesisUtterance(clean);
-
-
-      utter.lang =
-        (currentLang === "pt-br")
-          ? "pt-BR"
-          : "en-US";
-
-
-      const voice =
-        pickVoice(currentLang);
-
-
-      if (voice) {
-        utter.voice = voice;
-      }
-
+      const voice = pickVoice(currentLang);
+      if (voice) utter.voice = voice;
 
       utter.rate = 1.0;
-
-
       window.speechSynthesis.speak(utter);
-
     }
 
-
-    window.speechSynthesis.onvoiceschanged =
-      () => {};
-
+    window.speechSynthesis.onvoiceschanged = () => {};
 
     ttsBtn.addEventListener("click", () => {
-
       ttsEnabled = !ttsEnabled;
+      ttsBtn.classList.toggle("off", !ttsEnabled);
+      ttsBtn.textContent = ttsEnabled ? "🔊" : "🔇";
 
+      if (!ttsEnabled) window.speechSynthesis.cancel();
 
-      ttsBtn.classList.toggle(
-        "off",
-        !ttsEnabled
-      );
-
-
-      ttsBtn.textContent =
-        ttsEnabled
-          ? "🔊"
-          : "🔇";
-
-
-      if (!ttsEnabled) {
-
-        window.speechSynthesis.cancel();
-
-      }
-
-
-      showStatus(
-
-        ttsEnabled
-
-          ? UI_TEXT[currentLang].ttsOn
-
-          : UI_TEXT[currentLang].ttsOff
-
-      );
-
+      showStatus(ttsEnabled ? UI_TEXT[currentLang].ttsOn : UI_TEXT[currentLang].ttsOff);
     });
 
-
-    // ══════════════════════════════════════════════════
-    // LÊ RESPOSTAS DO BOT
-    // ══════════════════════════════════════════════════
-
     function attachResponseListener() {
-
-      const dfMessenger =
-        document.querySelector("df-messenger");
-
-
+      const dfMessenger = document.querySelector("df-messenger");
       if (!dfMessenger) return;
 
+      dfMessenger.addEventListener("df-response-received", (event) => {
+        if (!ttsEnabled) return;
 
-      dfMessenger.addEventListener(
-        "df-response-received",
-        (event) => {
+        const qr = event.detail?.response?.queryResult;
+        if (!qr) return;
 
-          if (!ttsEnabled) return;
+        let text = qr.fulfillmentText || "";
 
-
-          const qr =
-            event.detail
-              ?.response
-              ?.queryResult;
-
-
-          if (!qr) return;
-
-
-          let text =
-            qr.fulfillmentText || "";
-
-
-          if (
-            !text &&
-            Array.isArray(
-              qr.fulfillmentMessages
-            )
-          ) {
-
-            text =
-              qr.fulfillmentMessages
-
-                .map(
-                  m =>
-                    m.text
-                      ?.text
-                      ?.join(" ")
-                    ||
-                    ""
-                )
-
-                .join(" ");
-
-          }
-
-
-          speak(text);
-
+        if (!text && Array.isArray(qr.fulfillmentMessages)) {
+          text = qr.fulfillmentMessages
+            .map(m => m.text?.text?.join(" ") || "")
+            .join(" ");
         }
-      );
 
+        speak(text);
+      });
     }
-
-
-    // ══════════════════════════════════════════════════
-    // TROCA DE IDIOMA
-    // ══════════════════════════════════════════════════
 
     function rebuildMessenger(langCode) {
-
-      const container =
-        document.getElementById(
-          "dg-container"
-        );
-
-
+      const container = document.getElementById("dg-container");
       container.innerHTML = "";
 
-
-      const df =
-        document.createElement(
-          "df-messenger"
-        );
-
-
-      df.setAttribute(
-        "intent",
-        "WELCOME"
-      );
-
-
-      df.setAttribute(
-        "chat-title",
-        UI_TEXT[langCode].title
-      );
-
-
-      df.setAttribute(
-        "agent-id",
-        AGENT_ID
-      );
-
-
-      df.setAttribute(
-        "language-code",
-        langCode
-      );
-
-
-      df.setAttribute(
-        "chat-icon",
-        CHAT_ICON
-      );
-
+      const df = document.createElement("df-messenger");
+      df.setAttribute("intent", "WELCOME");
+      df.setAttribute("chat-title", UI_TEXT[langCode].title);
+      df.setAttribute("agent-id", AGENT_ID);
+      df.setAttribute("language-code", langCode);
+      df.setAttribute("chat-icon", CHAT_ICON);
 
       container.appendChild(df);
-
-
       attachResponseListener();
-
-
-      /* Reaplica visual após recriar o chat */
-      setTimeout(
-        applyPremiumVisual,
-        800
-      );
-
     }
 
-
-    langSel.addEventListener(
-      "change",
-      () => {
-
-        currentLang =
-          langSel.value;
-
-
-        window.speechSynthesis.cancel();
-
-
-        if (recognition) {
-
-          recognition.lang =
-            (currentLang === "pt-br")
-              ? "pt-BR"
-              : "en-US";
-
-        }
-
-
-        rebuildMessenger(currentLang);
-
-
-        showStatus(
-          UI_TEXT[currentLang].langChanged,
-          4000
-        );
-
-      }
-    );
-
-
-    // ══════════════════════════════════════════════════
-    // VISUAL PREMIUM
-    // Apenas aparência
-    // Não altera lógica do bot
-    // ══════════════════════════════════════════════════
-
-    function applyPremiumVisual() {
-
-      try {
-
-        const df =
-          document.querySelector(
-            "df-messenger"
-          );
-
-
-        if (!df || !df.shadowRoot) {
-          return;
-        }
-
-
-        /* ──────────────────────────────────────────────
-           ÍCONE FLUTUANTE
-           ────────────────────────────────────────────── */
-
-        const widgetIcon =
-          df.shadowRoot.querySelector(
-            "#widgetIcon"
-          );
-
-
-        if (widgetIcon) {
-
-          widgetIcon.style.width =
-            "58px";
-
-          widgetIcon.style.height =
-            "58px";
-
-          widgetIcon.style.borderRadius =
-            "50%";
-
-          widgetIcon.style.backgroundColor =
-            "#FFCC00";
-
-          widgetIcon.style.boxShadow =
-            "0 10px 28px rgba(0,0,0,.24)";
-
-          widgetIcon.style.border =
-            "3px solid #FFFFFF";
-
-          widgetIcon.style.transition =
-            "transform .18s ease, box-shadow .18s ease";
-
-        }
-
-
-        /* ──────────────────────────────────────────────
-           CHAT
-           ────────────────────────────────────────────── */
-
-        const chat =
-          df.shadowRoot.querySelector(
-            "df-messenger-chat"
-          );
-
-
-        if (!chat || !chat.shadowRoot) {
-          return;
-        }
-
-
-        /* Injeta CSS no Shadow DOM do chat */
-        if (
-          !chat.shadowRoot.querySelector(
-            "#dg-premium-chat-style"
-          )
-        ) {
-
-          const style =
-            document.createElement("style");
-
-
-          style.id =
-            "dg-premium-chat-style";
-
-
-          style.textContent = `
-
-            :host {
-              font-family:
-                Arial,
-                Helvetica,
-                sans-serif !important;
-            }
-
-            .chat-wrapper,
-            #chat-wrapper {
-              border-radius:
-                22px !important;
-
-              overflow:
-                hidden !important;
-
-              box-shadow:
-                0 18px 48px
-                rgba(0, 0, 0, .24)
-                !important;
-
-              border:
-                1px solid
-                rgba(212, 5, 17, .10)
-                !important;
-            }
-
-            .chat-title,
-            #chat-title,
-            .titlebar,
-            #titlebar {
-              background:
-                linear-gradient(
-                  135deg,
-                  #FFCC00 0%,
-                  #FFD84D 100%
-                )
-                !important;
-
-              color:
-                #D40511
-                !important;
-
-              font-weight:
-                800
-                !important;
-            }
-
-          `;
-
-
-          chat.shadowRoot.appendChild(
-            style
-          );
-
-        }
-
-
-        /* ──────────────────────────────────────────────
-           INPUT
-           ────────────────────────────────────────────── */
-
-        const userInput =
-          chat.shadowRoot.querySelector(
-            "df-messenger-user-input"
-          );
-
-
-        if (
-          userInput &&
-          userInput.shadowRoot
-        ) {
-
-          if (
-            !userInput.shadowRoot.querySelector(
-              "#dg-premium-input-style"
-            )
-          ) {
-
-            const inputStyle =
-              document.createElement(
-                "style"
-              );
-
-
-            inputStyle.id =
-              "dg-premium-input-style";
-
-
-            inputStyle.textContent = `
-
-              :host {
-                background:
-                  #FFFFFF
-                  !important;
-
-                border-top:
-                  1px solid
-                  rgba(212, 5, 17, .10)
-                  !important;
-              }
-
-              input {
-                color:
-                  #191919
-                  !important;
-
-                background:
-                  #FFFFFF
-                  !important;
-
-                font-size:
-                  14px
-                  !important;
-
-                padding:
-                  14px 16px
-                  !important;
-              }
-
-              input::placeholder {
-                color:
-                  #8A8A8A
-                  !important;
-
-                font-style:
-                  italic;
-              }
-
-              button {
-                color:
-                  #D40511
-                  !important;
-              }
-
-            `;
-
-
-            userInput.shadowRoot.appendChild(
-              inputStyle
-            );
-
-          }
-
-        }
-
-
-        /* ──────────────────────────────────────────────
-           MENSAGENS
-           ────────────────────────────────────────────── */
-
-        const bubbles =
-          chat.shadowRoot.querySelectorAll(
-            "message-bubble"
-          );
-
-
-        bubbles.forEach((bubble) => {
-
-          if (!bubble.shadowRoot) return;
-
-
-          if (
-            bubble.shadowRoot.querySelector(
-              "#dg-premium-bubble-style"
-            )
-          ) {
-            return;
-          }
-
-
-          const bubbleStyle =
-            document.createElement(
-              "style"
-            );
-
-
-          bubbleStyle.id =
-            "dg-premium-bubble-style";
-
-
-          bubbleStyle.textContent = `
-
-            .message-bubble,
-            .bubble,
-            div {
-              border-radius:
-                18px
-                !important;
-            }
-
-          `;
-
-
-          bubble.shadowRoot.appendChild(
-            bubbleStyle
-          );
-
-        });
-
+    langSel.addEventListener("change", () => {
+      currentLang = langSel.value;
+      window.speechSynthesis.cancel();
+
+      if (recognition) {
+        recognition.lang = currentLang === "pt-br" ? "pt-BR" : "en-US";
       }
 
-      catch (e) {
+      rebuildMessenger(currentLang);
+      showStatus(UI_TEXT[currentLang].langChanged, 4000);
+    });
 
-        /*
-          Silencioso de propósito.
-          Se o Dialogflow alterar algum elemento interno,
-          o chatbot continua funcionando normalmente.
-        */
-
-      }
-
-    }
-
-
-    // ══════════════════════════════════════════════════
-    // OBSERVADOR VISUAL
-    // Reaplica apenas estilos quando o chat muda
-    // ══════════════════════════════════════════════════
-
-    function startVisualObserver() {
-
-      const observer =
-        new MutationObserver(() => {
-
-          applyPremiumVisual();
-
-        });
-
-
-      observer.observe(
-        document.body,
-        {
-          childList: true,
-          subtree: true
-        }
-      );
-
-    }
-
-
-    // ══════════════════════════════════════════════════
-    // INICIALIZAÇÃO
-    // ══════════════════════════════════════════════════
-
-    window.addEventListener(
-      "dfMessengerLoaded",
-      () => {
-
-        attachResponseListener();
-
-        setTimeout(
-          applyPremiumVisual,
-          500
-        );
-
-        setTimeout(
-          applyPremiumVisual,
-          1200
-        );
-
-      }
-    );
-
+    window.addEventListener("dfMessengerLoaded", attachResponseListener);
 
     setupRecognition();
-
-    startVisualObserver();
-
   </script>
 
 </body>
