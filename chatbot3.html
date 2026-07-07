@@ -268,11 +268,6 @@
 
     /* ==================================================
        CABEÇALHO DHL (dentro do próprio chat)
-       --------------------------------------------------
-       Injeta logo + divisória vermelha + título/subtítulo
-       na barra de título nativa do df-messenger, via
-       shadow DOM. Como fica DENTRO da titlebar, acompanha
-       a largura do chat automaticamente.
        ================================================== */
 
     function customizeTitlebar() {
@@ -296,7 +291,6 @@
           root.querySelector("div");
         if (!wrapper) return false;
 
-        /* ---- estilos do cabeçalho ---- */
         const st = document.createElement("style");
         st.id = "dhl-header-style";
         st.textContent = `
@@ -310,7 +304,6 @@
             align-items: center !important;
           }
 
-          /* listras de velocidade DHL no canto direito */
           .title-wrapper::after {
             content: "";
             position: absolute;
@@ -329,15 +322,12 @@
             pointer-events: none;
           }
 
-          /* esconde APENAS o texto do título nativo
-             (mantém o botão de minimizar funcionando) */
           .title-wrapper .title,
           .title-wrapper h2,
           .title-wrapper span.title {
             display: none !important;
           }
 
-          /* botão de minimizar acima das listras, em vermelho DHL */
           .title-wrapper #minimizeIcon,
           .title-wrapper .minimize-icon,
           .title-wrapper button {
@@ -347,7 +337,6 @@
                     hue-rotate(352deg) brightness(85%) contrast(115%);
           }
 
-          /* ---- bloco customizado ---- */
           #dhl-header {
             display: flex;
             align-items: center;
@@ -390,7 +379,6 @@
         `;
         root.appendChild(st);
 
-        /* ---- monta o cabeçalho ---- */
         const hdr = document.createElement("div");
         hdr.id = "dhl-header";
 
@@ -429,7 +417,6 @@
       }
     }
 
-    /* a titlebar só existe com o chat aberto: tenta várias vezes */
     let titlebarTimer = null;
 
     function customizeTitlebarWithRetries(tries = 40) {
@@ -444,43 +431,62 @@
     /* ==================================================
        TEXTO BRANCO NO BALÃO DO USUÁRIO
        --------------------------------------------------
-       A variável --df-messenger-font-color (vermelha)
-       vaza para dentro do balão vermelho do usuário.
-       Este estilo força o texto branco via shadow DOM.
+       Nessa versão do df-messenger, a cor do texto dos
+       DOIS balões vem da mesma variável. Aqui um
+       MutationObserver pinta de branco, com estilo
+       inline (que vence qualquer CSS), cada mensagem
+       do usuário assim que ela aparece.
        ================================================== */
 
-    function fixUserMessageColor() {
+    let userMsgObserver = null;
+    let userMsgTimer = null;
+
+    function getMessageListRoot() {
       try {
         const dfMessenger = document.querySelector("df-messenger");
         const chat = dfMessenger.shadowRoot.querySelector("df-messenger-chat");
-        const list = chat.shadowRoot.querySelector("df-message-list");
-        const root = list.shadowRoot;
-        if (!root) return false;
-
-        if (root.querySelector("#dhl-user-msg-fix")) return true;
-
-        const st = document.createElement("style");
-        st.id = "dhl-user-msg-fix";
-        st.textContent = `
-          .user-message,
-          .user-message * {
-            color: #FFFFFF !important;
-          }
-        `;
-        root.appendChild(st);
-        return true;
-
+        const list =
+          chat.shadowRoot.querySelector("df-message-list") ||
+          chat.shadowRoot.querySelector("df-messenger-message-list") ||
+          chat.shadowRoot.querySelector("[class*='message-list']");
+        if (!list) return null;
+        return list.shadowRoot || list;
       } catch (e) {
-        return false;
+        return null;
       }
     }
 
-    let userMsgTimer = null;
+    function paintUserMessages(root) {
+      const userMsgs = root.querySelectorAll(
+        ".user-message, [class*='user-message'], [class*='userMessage']"
+      );
+      userMsgs.forEach(el => {
+        el.style.setProperty("color", "#FFFFFF", "important");
+        el.querySelectorAll("*").forEach(child => {
+          child.style.setProperty("color", "#FFFFFF", "important");
+        });
+      });
+    }
+
+    function setupUserMessageWatcher() {
+      const root = getMessageListRoot();
+      if (!root) return false;
+
+      /* pinta o que já existe */
+      paintUserMessages(root);
+
+      /* observa mensagens novas chegando */
+      if (userMsgObserver) userMsgObserver.disconnect();
+      userMsgObserver = new MutationObserver(() => paintUserMessages(root));
+      userMsgObserver.observe(root, { childList: true, subtree: true });
+
+      return true;
+    }
 
     function fixUserMessageColorWithRetries(tries = 40) {
       clearInterval(userMsgTimer);
       userMsgTimer = setInterval(() => {
-        if (fixUserMessageColor() || --tries <= 0) {
+        if (setupUserMessageWatcher() || --tries <= 0) {
           clearInterval(userMsgTimer);
         }
       }, 300);
