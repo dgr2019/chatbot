@@ -25,19 +25,8 @@
     body {
       margin: 0;
       min-height: 100vh;
-
-      background:
-        radial-gradient(
-          circle,
-          #FFFFFF 0%,
-          #F2F2F2 55%,
-          #E5E5E5 100%
-        );
-
-      font-family:
-        Arial,
-        Helvetica,
-        sans-serif;
+      background: radial-gradient(circle, #FFFFFF 0%, #F2F2F2 55%, #E5E5E5 100%);
+      font-family: Arial, Helvetica, sans-serif;
     }
 
     /* ==================================================
@@ -45,44 +34,21 @@
        ================================================== */
 
     df-messenger {
-      /* Caixa da DGuardian */
       --df-messenger-bot-message: #FFFFFF;
-
-      /* TEXTO DA DGUARDIAN EM VERMELHO DHL */
       --df-messenger-bot-message-font-color: #D40511;
-
-      /* Caixa do usuário */
       --df-messenger-user-message: #D40511;
-
-      /* Texto do usuário */
       --df-messenger-user-message-font-color: #FFFFFF;
-
-      /* Fundo da conversa */
       --df-messenger-chat-background-color: #FFF8E6;
-
-      /* Cabeçalho */
       --df-messenger-button-titlebar-color: #FFCC00;
-
-      /*
-        IMPORTANTE:
-        NÃO usar transparent aqui.
-        Essa variável afeta textos internos.
-      */
       --df-messenger-font-color: #D40511;
-
-      /* Ícone de envio */
       --df-messenger-send-icon: #D40511;
-
-      /* Campo de entrada */
       --df-messenger-input-box-color: #FFFFFF;
       --df-messenger-input-font-color: #191919;
       --df-messenger-input-placeholder-font-color: #888888;
 
       position: fixed;
-
       right: 70px;
       bottom: 75px;
-
       z-index: 998;
     }
 
@@ -92,15 +58,11 @@
 
     #dg-voice-bar {
       position: fixed;
-
       bottom: 24px;
       right: 150px;
-
       display: flex;
       align-items: center;
-
       gap: 10px;
-
       z-index: 999;
     }
 
@@ -111,92 +73,42 @@
     .dg-btn {
       width: 58px;
       height: 58px;
-
-      border:
-        3px solid #FFFFFF;
-
-      border-radius:
-        50%;
-
-      background:
-        #D40511;
-
-      color:
-        #FFFFFF;
-
-      font-size:
-        21px;
-
-      cursor:
-        pointer;
-
-      box-shadow:
-        0 8px 22px
-        rgba(0,0,0,.28);
-
-      display:
-        flex;
-
-      align-items:
-        center;
-
-      justify-content:
-        center;
-
-      transition:
-        transform .2s ease,
-        background .2s ease,
-        box-shadow .2s ease;
+      border: 3px solid #FFFFFF;
+      border-radius: 50%;
+      background: #D40511;
+      color: #FFFFFF;
+      font-size: 21px;
+      cursor: pointer;
+      box-shadow: 0 8px 22px rgba(0,0,0,.28);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: transform .2s ease, background .2s ease, box-shadow .2s ease;
     }
 
     .dg-btn:hover {
-      transform:
-        translateY(-2px)
-        scale(1.04);
+      transform: translateY(-2px) scale(1.04);
     }
 
     .dg-btn:focus-visible {
-      outline:
-        3px solid #FFCC00;
-
-      outline-offset:
-        3px;
+      outline: 3px solid #FFCC00;
+      outline-offset: 3px;
     }
 
     .dg-btn.off {
-      background:
-        #777777;
+      background: #777777;
     }
 
     .dg-btn.listening {
-      background:
-        #FFCC00;
-
-      color:
-        #D40511;
-
-      animation:
-        dg-pulse 1s infinite;
+      background: #FFCC00;
+      color: #D40511;
+      animation: dg-pulse 1s infinite;
     }
 
     @keyframes dg-pulse {
-      0% {
-        box-shadow:
-          0 0 0 0
-          rgba(212,5,17,.45);
-      }
-
-      70% {
-        box-shadow:
-          0 0 0 16px
-          rgba(212,5,17,0);
-      }
-
-      100% {
-        box-shadow:
-          0 0 0 0
-          rgba(212,5,17,0);
-      }
+      0%   { box-shadow: 0 0 0 0 rgba(212,5,17,.45); }
+      70%  { box-shadow: 0 0 0 16px rgba(212,5,17,0); }
+      100% { box-shadow: 0 0 0 0 rgba(212,5,17,0); }
     }
 
     /* ==================================================
@@ -205,34 +117,15 @@
 
     #dg-lang {
       height: 58px;
-
-      border:
-        2px solid #FFCC00;
-
-      border-radius:
-        30px;
-
-      background:
-        #FFFFFF;
-
-      color:
-        #D40511;
-
-      font-weight:
-        800;
-
-      font-size:
-        14px;
-
-      padding:
-        0 18px;
-
-      cursor:
-        pointer;
-
-      box-shadow:
-        0 8px 22px
-        rgba(0,0,0,.20);
+      border: 2px solid #FFCC00;
+      border-radius: 30px;
+      background: #FFFFFF;
+      color: #D40511;
+      font-weight: 800;
+      font-size: 14px;
+      padding: 0 18px;
+      cursor: pointer;
+      box-shadow: 0 8px 22px rgba(0,0,0,.20);
     }
 
     /* ==================================================
@@ -241,37 +134,17 @@
 
     #dg-status {
       position: fixed;
-
       bottom: 92px;
       right: 150px;
-
-      background:
-        #191919;
-
-      color:
-        #FFCC00;
-
-      font-size:
-        13px;
-
-      font-weight:
-        bold;
-
-      padding:
-        8px 14px;
-
-      border-radius:
-        16px;
-
-      z-index:
-        999;
-
-      display:
-        none;
-
-      box-shadow:
-        0 8px 22px
-        rgba(0,0,0,.22);
+      background: #191919;
+      color: #FFCC00;
+      font-size: 13px;
+      font-weight: bold;
+      padding: 8px 14px;
+      border-radius: 16px;
+      z-index: 999;
+      display: none;
+      box-shadow: 0 8px 22px rgba(0,0,0,.22);
     }
 
     /* ==================================================
@@ -279,27 +152,22 @@
        ================================================== */
 
     @media (max-width: 700px) {
-
       df-messenger {
         right: 18px;
         bottom: 88px;
       }
-
       #dg-voice-bar {
         right: 70px;
         bottom: 22px;
       }
-
       .dg-btn {
         width: 50px;
         height: 50px;
       }
-
       #dg-lang {
         height: 50px;
         padding: 0 12px;
       }
-
       #dg-status {
         right: 18px;
         bottom: 82px;
@@ -310,62 +178,25 @@
 
 <body>
 
-  <!-- ==================================================
-       STATUS
-       ================================================== -->
-
+  <!-- STATUS -->
   <div id="dg-status"></div>
 
-
-  <!-- ==================================================
-       CONTROLES
-       ================================================== -->
-
+  <!-- CONTROLES -->
   <div id="dg-voice-bar">
-
-    <select
-      id="dg-lang"
-      title="Idioma / Language"
-      aria-label="Idioma do chatbot"
-    >
-      <option value="pt-br" selected>
-        🇧🇷 PT
-      </option>
-
-      <option value="en">
-        🇺🇸 EN
-      </option>
+    <select id="dg-lang" title="Idioma / Language" aria-label="Idioma do chatbot">
+      <option value="pt-br" selected>🇧🇷 PT</option>
+      <option value="en">🇺🇸 EN</option>
     </select>
 
+    <button id="dg-tts" class="dg-btn" title="Ouvir respostas do bot"
+      aria-label="Ativar ou desativar leitura em voz alta">🔊</button>
 
-    <button
-      id="dg-tts"
-      class="dg-btn"
-      title="Ouvir respostas do bot"
-      aria-label="Ativar ou desativar leitura em voz alta"
-    >
-      🔊
-    </button>
-
-
-    <button
-      id="dg-mic"
-      class="dg-btn"
-      title="Falar com a DGuardian"
-      aria-label="Falar com a DGuardian pelo microfone"
-    >
-      🎤
-    </button>
-
+    <button id="dg-mic" class="dg-btn" title="Falar com a DGuardian"
+      aria-label="Falar com a DGuardian pelo microfone">🎤</button>
   </div>
 
-
-  <!-- ==================================================
-       CHAT
-       ================================================== -->
-
+  <!-- CHAT -->
   <div id="dg-container">
-
     <df-messenger
       intent="WELCOME"
       chat-title="DGuardian"
@@ -373,7 +204,6 @@
       language-code="pt-br"
       chat-icon="https://dgr2019.github.io/chatbot/dguardian-logo.png">
     </df-messenger>
-
   </div>
 
 
@@ -382,840 +212,468 @@
        CONFIGURAÇÕES
        ================================================== */
 
-    const AGENT_ID =
-      "0e08ef10-1d77-401e-a0ff-e49389d31ded";
-
-    const CHAT_ICON =
-      "https://dgr2019.github.io/chatbot/dguardian-logo.png";
-
+    const AGENT_ID  = "0e08ef10-1d77-401e-a0ff-e49389d31ded";
+    const CHAT_ICON = "https://dgr2019.github.io/chatbot/dguardian-logo.png";
+    const DHL_LOGO  = "https://dgr2019.github.io/chatbot/logo-dhl.png";
 
     const UI_TEXT = {
-
       "pt-br": {
-        title:
-          "DGuardian",
-
-        listening:
-          "Ouvindo... pode falar 🎤",
-
-        noMic:
-          "Seu navegador não suporta reconhecimento de voz. Use o Chrome ou o Edge.",
-
-        micDenied:
-          "Permita o acesso ao microfone nas configurações do navegador.",
-
-        ttsOn:
-          "Leitura em voz alta ativada 🔊",
-
-        ttsOff:
-          "Leitura em voz alta desativada 🔇",
-
-        langChanged:
-          "Idioma alterado para Português. A conversa foi reiniciada."
+        title: "DGuardian",
+        subtitle: "Especialista Internacional",
+        listening: "Ouvindo... pode falar 🎤",
+        noMic: "Seu navegador não suporta reconhecimento de voz. Use o Chrome ou o Edge.",
+        micDenied: "Permita o acesso ao microfone nas configurações do navegador.",
+        ttsOn: "Leitura em voz alta ativada 🔊",
+        ttsOff: "Leitura em voz alta desativada 🔇",
+        langChanged: "Idioma alterado para Português. A conversa foi reiniciada."
       },
-
-
       "en": {
-        title:
-          "DGuardian",
-
-        listening:
-          "Listening... go ahead 🎤",
-
-        noMic:
-          "Your browser does not support speech recognition. Please use Chrome or Edge.",
-
-        micDenied:
-          "Please allow microphone access in your browser settings.",
-
-        ttsOn:
-          "Read-aloud enabled 🔊",
-
-        ttsOff:
-          "Read-aloud disabled 🔇",
-
-        langChanged:
-          "Language switched to English. The conversation was restarted."
+        title: "DGuardian",
+        subtitle: "International Specialist",
+        listening: "Listening... go ahead 🎤",
+        noMic: "Your browser does not support speech recognition. Please use Chrome or Edge.",
+        micDenied: "Please allow microphone access in your browser settings.",
+        ttsOn: "Read-aloud enabled 🔊",
+        ttsOff: "Read-aloud disabled 🔇",
+        langChanged: "Language switched to English. The conversation was restarted."
       }
-
     };
 
+    let currentLang = "pt-br";
+    let ttsEnabled  = true;
+    let recognition = null;
+    let isListening = false;
 
-    let currentLang =
-      "pt-br";
+    const micBtn   = document.getElementById("dg-mic");
+    const ttsBtn   = document.getElementById("dg-tts");
+    const langSel  = document.getElementById("dg-lang");
+    const statusEl = document.getElementById("dg-status");
 
-    let ttsEnabled =
-      true;
-
-    let recognition =
-      null;
-
-    let isListening =
-      false;
-
-
-    const micBtn =
-      document.getElementById("dg-mic");
-
-    const ttsBtn =
-      document.getElementById("dg-tts");
-
-    const langSel =
-      document.getElementById("dg-lang");
-
-    const statusEl =
-      document.getElementById("dg-status");
-
-
-    let statusTimer =
-      null;
-
+    let statusTimer = null;
 
     /* ==================================================
        STATUS
        ================================================== */
 
-    function showStatus(
-      msg,
-      ms = 3000
-    ) {
-
-      statusEl.textContent =
-        msg;
-
-      statusEl.style.display =
-        "block";
-
-
-      clearTimeout(
-        statusTimer
-      );
-
-
+    function showStatus(msg, ms = 3000) {
+      statusEl.textContent = msg;
+      statusEl.style.display = "block";
+      clearTimeout(statusTimer);
       if (ms) {
-
-        statusTimer =
-          setTimeout(
-            () => {
-
-              statusEl.style.display =
-                "none";
-
-            },
-
-            ms
-          );
-
+        statusTimer = setTimeout(() => {
+          statusEl.style.display = "none";
+        }, ms);
       }
-
     }
 
+    /* ==================================================
+       CABEÇALHO DHL (dentro do próprio chat)
+       --------------------------------------------------
+       Injeta logo + divisória vermelha + título/subtítulo
+       na barra de título nativa do df-messenger, via
+       shadow DOM. Como fica DENTRO da titlebar, acompanha
+       a largura do chat automaticamente.
+       ================================================== */
+
+    function customizeTitlebar() {
+      try {
+        const dfMessenger = document.querySelector("df-messenger");
+        const chat = dfMessenger.shadowRoot.querySelector("df-messenger-chat");
+        const titlebar = chat.shadowRoot.querySelector("df-messenger-titlebar");
+        const root = titlebar.shadowRoot;
+        if (!root) return false;
+
+        /* já aplicado? só atualiza o subtítulo (troca de idioma) */
+        const existing = root.querySelector("#dhl-header");
+        if (existing) {
+          existing.querySelector(".dhl-sub").textContent =
+            UI_TEXT[currentLang].subtitle;
+          return true;
+        }
+
+        const wrapper =
+          root.querySelector(".title-wrapper") ||
+          root.querySelector("div");
+        if (!wrapper) return false;
+
+        /* ---- estilos do cabeçalho ---- */
+        const st = document.createElement("style");
+        st.id = "dhl-header-style";
+        st.textContent = `
+          .title-wrapper {
+            background: linear-gradient(180deg, #FFD84D 0%, #FFCC00 100%) !important;
+            min-height: 72px !important;
+            padding: 10px 16px !important;
+            position: relative !important;
+            overflow: hidden !important;
+            display: flex !important;
+            align-items: center !important;
+          }
+
+          /* listras de velocidade DHL no canto direito */
+          .title-wrapper::after {
+            content: "";
+            position: absolute;
+            right: 30px;
+            top: 0;
+            width: 45%;
+            height: 100%;
+            background: linear-gradient(90deg,
+              transparent 0 12%,
+              rgba(255,255,255,.30) 12% 28%,
+              transparent 28% 36%,
+              rgba(255,255,255,.22) 36% 58%,
+              transparent 58% 64%,
+              rgba(255,255,255,.15) 64% 100%);
+            transform: skewX(-30deg);
+            pointer-events: none;
+          }
+
+          /* esconde APENAS o texto do título nativo
+             (mantém o botão de minimizar funcionando) */
+          .title-wrapper .title,
+          .title-wrapper h2,
+          .title-wrapper span.title {
+            display: none !important;
+          }
+
+          /* botão de minimizar acima das listras, em vermelho DHL */
+          .title-wrapper #minimizeIcon,
+          .title-wrapper .minimize-icon,
+          .title-wrapper button {
+            position: relative;
+            z-index: 2;
+            filter: invert(14%) sepia(93%) saturate(6394%)
+                    hue-rotate(352deg) brightness(85%) contrast(115%);
+          }
+
+          /* ---- bloco customizado ---- */
+          #dhl-header {
+            display: flex;
+            align-items: center;
+            gap: 14px;
+            flex: 1;
+            min-width: 0;
+            position: relative;
+            z-index: 2;
+            font-family: Arial, Helvetica, sans-serif;
+          }
+          #dhl-header img.dhl-logo {
+            height: 24px;
+            flex-shrink: 0;
+          }
+          #dhl-header .dhl-divider {
+            width: 3px;
+            height: 40px;
+            background: #D40511;
+            border-radius: 2px;
+            flex-shrink: 0;
+          }
+          #dhl-header .dhl-text {
+            line-height: 1.2;
+            min-width: 0;
+          }
+          #dhl-header .dhl-title {
+            display: block;
+            color: #D40511;
+            font-size: 20px;
+            font-weight: bold;
+            letter-spacing: .2px;
+            white-space: nowrap;
+          }
+          #dhl-header .dhl-sub {
+            display: block;
+            color: #191919;
+            font-size: 13px;
+            white-space: nowrap;
+          }
+        `;
+        root.appendChild(st);
+
+        /* ---- monta o cabeçalho ---- */
+        const hdr = document.createElement("div");
+        hdr.id = "dhl-header";
+
+        const logo = document.createElement("img");
+        logo.className = "dhl-logo";
+        logo.src = DHL_LOGO;
+        logo.alt = "DHL";
+
+        const divider = document.createElement("div");
+        divider.className = "dhl-divider";
+
+        const txt = document.createElement("div");
+        txt.className = "dhl-text";
+
+        const t = document.createElement("span");
+        t.className = "dhl-title";
+        t.textContent = "DGuardian";
+
+        const s = document.createElement("span");
+        s.className = "dhl-sub";
+        s.textContent = UI_TEXT[currentLang].subtitle;
+
+        txt.appendChild(t);
+        txt.appendChild(s);
+
+        hdr.appendChild(logo);
+        hdr.appendChild(divider);
+        hdr.appendChild(txt);
+
+        wrapper.insertBefore(hdr, wrapper.firstChild);
+
+        return true;
+
+      } catch (e) {
+        return false;
+      }
+    }
+
+    /* a titlebar só existe com o chat aberto: tenta várias vezes */
+    let titlebarTimer = null;
+
+    function customizeTitlebarWithRetries(tries = 40) {
+      clearInterval(titlebarTimer);
+      titlebarTimer = setInterval(() => {
+        if (customizeTitlebar() || --tries <= 0) {
+          clearInterval(titlebarTimer);
+        }
+      }, 300);
+    }
 
     /* ==================================================
        INPUT DO DIALOGFLOW
        ================================================== */
 
     function getDfInput() {
-
       try {
-
-        const dfMessenger =
-          document.querySelector(
-            "df-messenger"
-          );
-
-
-        const chat =
-          dfMessenger
-            .shadowRoot
-            .querySelector(
-              "df-messenger-chat"
-            );
-
-
-        const uiRoot =
-          chat
-            .shadowRoot
-            .querySelector(
-              "df-messenger-user-input"
-            );
-
-
-        return uiRoot
-          .shadowRoot
-          .querySelector(
-            "input"
-          );
-
-      }
-
-      catch (e) {
-
+        const dfMessenger = document.querySelector("df-messenger");
+        const chat = dfMessenger.shadowRoot.querySelector("df-messenger-chat");
+        const uiRoot = chat.shadowRoot.querySelector("df-messenger-user-input");
+        return uiRoot.shadowRoot.querySelector("input");
+      } catch (e) {
         return null;
-
       }
-
     }
-
 
     /* ==================================================
        ABRIR CHAT
        ================================================== */
 
     function openChat() {
-
       try {
-
-        const dfMessenger =
-          document.querySelector(
-            "df-messenger"
-          );
-
-
+        const dfMessenger = document.querySelector("df-messenger");
         if (!getDfInput()) {
-
-          dfMessenger
-            .shadowRoot
-            .querySelector(
-              "#widgetIcon"
-            )
-            ?.click();
-
+          dfMessenger.shadowRoot.querySelector("#widgetIcon")?.click();
         }
-
-      }
-
-      catch (e) {}
-
+      } catch (e) {}
     }
-
 
     /* ==================================================
        ENVIAR TEXTO AO BOT
        ================================================== */
 
     function sendToBot(text) {
-
       openChat();
-
-
-      setTimeout(
-        () => {
-
-          const input =
-            getDfInput();
-
-
-          if (!input)
-            return;
-
-
-          input.value =
-            text;
-
-
-          input.dispatchEvent(
-
-            new Event(
-              "input",
-              {
-                bubbles:
-                  true
-              }
-            )
-
-          );
-
-
-          input.dispatchEvent(
-
-            new KeyboardEvent(
-              "keydown",
-              {
-                key:
-                  "Enter",
-
-                code:
-                  "Enter",
-
-                keyCode:
-                  13,
-
-                which:
-                  13,
-
-                bubbles:
-                  true
-              }
-            )
-
-          );
-
-        },
-
-        400
-      );
-
+      setTimeout(() => {
+        const input = getDfInput();
+        if (!input) return;
+        input.value = text;
+        input.dispatchEvent(new Event("input", { bubbles: true }));
+        input.dispatchEvent(new KeyboardEvent("keydown", {
+          key: "Enter", code: "Enter", keyCode: 13, which: 13, bubbles: true
+        }));
+      }, 400);
     }
-
 
     /* ==================================================
        MICROFONE
        ================================================== */
 
     function setupRecognition() {
-
-      const SR =
-        window.SpeechRecognition
-        ||
-        window.webkitSpeechRecognition;
-
-
+      const SR = window.SpeechRecognition || window.webkitSpeechRecognition;
       if (!SR) {
-
-        micBtn.style.display =
-          "none";
-
+        micBtn.style.display = "none";
         return;
-
       }
 
+      recognition = new SR();
+      recognition.lang = currentLang === "pt-br" ? "pt-BR" : "en-US";
+      recognition.interimResults = false;
+      recognition.maxAlternatives = 1;
 
-      recognition =
-        new SR();
+      recognition.onstart = () => {
+        isListening = true;
+        micBtn.classList.add("listening");
+        showStatus(UI_TEXT[currentLang].listening, 0);
+      };
 
+      recognition.onresult = (e) => {
+        const text = e.results[0][0].transcript;
+        sendToBot(text);
+      };
 
-      recognition.lang =
-        currentLang === "pt-br"
-          ? "pt-BR"
-          : "en-US";
+      recognition.onerror = (e) => {
+        if (e.error === "not-allowed") {
+          showStatus(UI_TEXT[currentLang].micDenied);
+        }
+      };
 
-
-      recognition.interimResults =
-        false;
-
-
-      recognition.maxAlternatives =
-        1;
-
-
-      recognition.onstart =
-        () => {
-
-          isListening =
-            true;
-
-
-          micBtn.classList.add(
-            "listening"
-          );
-
-
-          showStatus(
-            UI_TEXT[currentLang].listening,
-            0
-          );
-
-        };
-
-
-      recognition.onresult =
-        (e) => {
-
-          const text =
-            e.results[0][0].transcript;
-
-
-          sendToBot(
-            text
-          );
-
-        };
-
-
-      recognition.onerror =
-        (e) => {
-
-          if (
-            e.error ===
-            "not-allowed"
-          ) {
-
-            showStatus(
-              UI_TEXT[currentLang].micDenied
-            );
-
-          }
-
-        };
-
-
-      recognition.onend =
-        () => {
-
-          isListening =
-            false;
-
-
-          micBtn.classList.remove(
-            "listening"
-          );
-
-
-          statusEl.style.display =
-            "none";
-
-        };
-
+      recognition.onend = () => {
+        isListening = false;
+        micBtn.classList.remove("listening");
+        statusEl.style.display = "none";
+      };
     }
 
-
-    micBtn.addEventListener(
-      "click",
-      () => {
-
-        if (!recognition) {
-
-          showStatus(
-            UI_TEXT[currentLang].noMic
-          );
-
-          return;
-
-        }
-
-
-        if (isListening) {
-
-          recognition.stop();
-
-          return;
-
-        }
-
-
-        window
-          .speechSynthesis
-          .cancel();
-
-
-        recognition.start();
-
+    micBtn.addEventListener("click", () => {
+      if (!recognition) {
+        showStatus(UI_TEXT[currentLang].noMic);
+        return;
       }
-    );
-
+      if (isListening) {
+        recognition.stop();
+        return;
+      }
+      window.speechSynthesis.cancel();
+      recognition.start();
+    });
 
     /* ==================================================
        LIMPEZA DO TEXTO PARA VOZ
        ================================================== */
 
     function cleanForSpeech(text) {
-
       return (text || "")
-
-        .replace(
-          /<[^>]*>/g,
-          " "
-        )
-
-        .replace(
-          /https?:\/\/\S+/g,
-          ""
-        )
-
-        .replace(
-          /[\u{1F300}-\u{1FAFF}\u{2600}-\u{27BF}]/gu,
-          ""
-        )
-
-        .replace(
-          /\s+/g,
-          " "
-        )
-
+        .replace(/<[^>]*>/g, " ")
+        .replace(/https?:\/\/\S+/g, "")
+        .replace(/[\u{1F300}-\u{1FAFF}\u{2600}-\u{27BF}]/gu, "")
+        .replace(/\s+/g, " ")
         .trim();
-
     }
-
 
     /* ==================================================
        ESCOLHA DE VOZ
        ================================================== */
 
-    function pickVoice(
-      langCode
-    ) {
-
-      const voices =
-        window
-          .speechSynthesis
-          .getVoices();
-
-
-      const prefix =
-        langCode === "pt-br"
-          ? "pt"
-          : "en";
-
-
+    function pickVoice(langCode) {
+      const voices = window.speechSynthesis.getVoices();
+      const prefix = langCode === "pt-br" ? "pt" : "en";
       return (
-
-        voices.find(
-          v =>
-            v.lang
-              .toLowerCase()
-              .startsWith(prefix)
-            &&
-            /natural|google/i
-              .test(v.name)
-        )
-
-        ||
-
-        voices.find(
-          v =>
-            v.lang
-              .toLowerCase()
-              .startsWith(prefix)
-        )
-
-        ||
-
+        voices.find(v =>
+          v.lang.toLowerCase().startsWith(prefix) &&
+          /natural|google/i.test(v.name)
+        ) ||
+        voices.find(v => v.lang.toLowerCase().startsWith(prefix)) ||
         null
-
       );
-
     }
-
 
     /* ==================================================
        FALAR RESPOSTA
        ================================================== */
 
     function speak(text) {
+      const clean = cleanForSpeech(text);
+      if (!clean) return;
 
-      const clean =
-        cleanForSpeech(
-          text
-        );
+      window.speechSynthesis.cancel();
 
+      const utter = new SpeechSynthesisUtterance(clean);
+      utter.lang = currentLang === "pt-br" ? "pt-BR" : "en-US";
 
-      if (!clean)
-        return;
+      const voice = pickVoice(currentLang);
+      if (voice) utter.voice = voice;
 
-
-      window
-        .speechSynthesis
-        .cancel();
-
-
-      const utter =
-        new SpeechSynthesisUtterance(
-          clean
-        );
-
-
-      utter.lang =
-        currentLang === "pt-br"
-          ? "pt-BR"
-          : "en-US";
-
-
-      const voice =
-        pickVoice(
-          currentLang
-        );
-
-
-      if (voice) {
-
-        utter.voice =
-          voice;
-
-      }
-
-
-      utter.rate =
-        1.0;
-
-
-      window
-        .speechSynthesis
-        .speak(
-          utter
-        );
-
+      utter.rate = 1.0;
+      window.speechSynthesis.speak(utter);
     }
 
-
-    window
-      .speechSynthesis
-      .onvoiceschanged =
-        () => {};
-
+    window.speechSynthesis.onvoiceschanged = () => {};
 
     /* ==================================================
        BOTÃO TTS
        ================================================== */
 
-    ttsBtn.addEventListener(
-      "click",
-      () => {
-
-        ttsEnabled =
-          !ttsEnabled;
-
-
-        ttsBtn
-          .classList
-          .toggle(
-            "off",
-            !ttsEnabled
-          );
-
-
-        ttsBtn.textContent =
-          ttsEnabled
-            ? "🔊"
-            : "🔇";
-
-
-        if (!ttsEnabled) {
-
-          window
-            .speechSynthesis
-            .cancel();
-
-        }
-
-
-        showStatus(
-
-          ttsEnabled
-
-            ? UI_TEXT[currentLang].ttsOn
-
-            : UI_TEXT[currentLang].ttsOff
-
-        );
-
-      }
-    );
-
+    ttsBtn.addEventListener("click", () => {
+      ttsEnabled = !ttsEnabled;
+      ttsBtn.classList.toggle("off", !ttsEnabled);
+      ttsBtn.textContent = ttsEnabled ? "🔊" : "🔇";
+      if (!ttsEnabled) window.speechSynthesis.cancel();
+      showStatus(ttsEnabled ? UI_TEXT[currentLang].ttsOn : UI_TEXT[currentLang].ttsOff);
+    });
 
     /* ==================================================
        LISTENER DAS RESPOSTAS
        ================================================== */
 
     function attachResponseListener() {
+      const dfMessenger = document.querySelector("df-messenger");
+      if (!dfMessenger) return;
 
-      const dfMessenger =
-        document.querySelector(
-          "df-messenger"
-        );
+      if (dfMessenger.dataset.dgResponseAttached === "true") return;
+      dfMessenger.dataset.dgResponseAttached = "true";
 
+      dfMessenger.addEventListener("df-response-received", (event) => {
+        if (!ttsEnabled) return;
 
-      if (!dfMessenger)
-        return;
+        const qr = event.detail?.response?.queryResult;
+        if (!qr) return;
 
+        let text = qr.fulfillmentText || "";
 
-      if (
-        dfMessenger.dataset
-          .dgResponseAttached ===
-        "true"
-      ) {
-        return;
-      }
-
-
-      dfMessenger.dataset
-        .dgResponseAttached =
-        "true";
-
-
-      dfMessenger.addEventListener(
-        "df-response-received",
-        (event) => {
-
-          if (!ttsEnabled)
-            return;
-
-
-          const qr =
-            event.detail
-              ?.response
-              ?.queryResult;
-
-
-          if (!qr)
-            return;
-
-
-          let text =
-            qr.fulfillmentText
-            ||
-            "";
-
-
-          if (
-            !text
-            &&
-            Array.isArray(
-              qr.fulfillmentMessages
-            )
-          ) {
-
-            text =
-              qr
-                .fulfillmentMessages
-
-                .map(
-                  m =>
-                    m.text
-                      ?.text
-                      ?.join(" ")
-                    ||
-                    ""
-                )
-
-                .join(" ");
-
-          }
-
-
-          speak(
-            text
-          );
-
+        if (!text && Array.isArray(qr.fulfillmentMessages)) {
+          text = qr.fulfillmentMessages
+            .map(m => m.text?.text?.join(" ") || "")
+            .join(" ");
         }
-      );
 
+        speak(text);
+      });
     }
-
 
     /* ==================================================
        TROCA DE IDIOMA
        ================================================== */
 
-    function rebuildMessenger(
-      langCode
-    ) {
+    function rebuildMessenger(langCode) {
+      const container = document.getElementById("dg-container");
+      container.innerHTML = "";
 
-      const container =
-        document.getElementById(
-          "dg-container"
-        );
+      const df = document.createElement("df-messenger");
+      df.setAttribute("intent", "WELCOME");
+      df.setAttribute("chat-title", UI_TEXT[langCode].title);
+      df.setAttribute("agent-id", AGENT_ID);
+      df.setAttribute("language-code", langCode);
+      df.setAttribute("chat-icon", CHAT_ICON);
+      container.appendChild(df);
 
-
-      container.innerHTML =
-        "";
-
-
-      const df =
-        document.createElement(
-          "df-messenger"
-        );
-
-
-      df.setAttribute(
-        "intent",
-        "WELCOME"
-      );
-
-
-      df.setAttribute(
-        "chat-title",
-        UI_TEXT[langCode].title
-      );
-
-
-      df.setAttribute(
-        "agent-id",
-        AGENT_ID
-      );
-
-
-      df.setAttribute(
-        "language-code",
-        langCode
-      );
-
-
-      df.setAttribute(
-        "chat-icon",
-        CHAT_ICON
-      );
-
-
-      container.appendChild(
-        df
-      );
-
-
-      setTimeout(
-        () => {
-
-          attachResponseListener();
-
-        },
-
-        700
-      );
-
+      setTimeout(() => {
+        attachResponseListener();
+        customizeTitlebarWithRetries();
+      }, 700);
     }
 
+    langSel.addEventListener("change", () => {
+      currentLang = langSel.value;
+      window.speechSynthesis.cancel();
 
-    langSel.addEventListener(
-      "change",
-      () => {
-
-        currentLang =
-          langSel.value;
-
-
-        window
-          .speechSynthesis
-          .cancel();
-
-
-        if (recognition) {
-
-          recognition.lang =
-            currentLang === "pt-br"
-              ? "pt-BR"
-              : "en-US";
-
-        }
-
-
-        rebuildMessenger(
-          currentLang
-        );
-
-
-        showStatus(
-          UI_TEXT[currentLang]
-            .langChanged,
-          4000
-        );
-
+      if (recognition) {
+        recognition.lang = currentLang === "pt-br" ? "pt-BR" : "en-US";
       }
-    );
 
+      rebuildMessenger(currentLang);
+      showStatus(UI_TEXT[currentLang].langChanged, 4000);
+    });
 
     /* ==================================================
        INICIALIZAÇÃO
        ================================================== */
 
-    window.addEventListener(
-      "dfMessengerLoaded",
-      () => {
-
-        attachResponseListener();
-
-      }
-    );
-
+    window.addEventListener("dfMessengerLoaded", () => {
+      attachResponseListener();
+      customizeTitlebarWithRetries();
+    });
 
     setupRecognition();
 
