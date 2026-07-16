@@ -13,7 +13,7 @@
     :root {
       --dhl-red: #D40511;
       --dhl-yellow: #FFCC00;
-      --dhl-cream: #FFF8E6;
+      --dhl-gray: #F2F2F2;
       --dhl-white: #FFFFFF;
       --dhl-dark: #191919;
     }
@@ -38,7 +38,10 @@
       --df-messenger-bot-message-font-color: #D40511;
       --df-messenger-user-message: #D40511;
       --df-messenger-user-message-font-color: #FFFFFF;
-      --df-messenger-chat-background-color: #FFF8E6;
+
+      /* FUNDO DO CHAT - cinza bem clarinho */
+      --df-messenger-chat-background-color: #F2F2F2;
+
       --df-messenger-button-titlebar-color: #FFCC00;
       --df-messenger-font-color: #D40511;
       --df-messenger-send-icon: #D40511;
@@ -429,13 +432,7 @@
     }
 
     /* ==================================================
-       TEXTO BRANCO NO BALÃO DO USUÁRIO
-       --------------------------------------------------
-       Nessa versão do df-messenger, a cor do texto dos
-       DOIS balões vem da mesma variável. Aqui um
-       MutationObserver pinta de branco, com estilo
-       inline (que vence qualquer CSS), cada mensagem
-       do usuário assim que ela aparece.
+       FUNDO CINZA + TEXTO BRANCO NO BALÃO DO USUÁRIO
        ================================================== */
 
     let userMsgObserver = null;
@@ -456,6 +453,21 @@
       }
     }
 
+    /* reforça o fundo cinza dentro do shadow DOM, caso a
+       variável CSS não pegue em alguma versão do widget */
+    function forceGrayBackground(root) {
+      if (root.querySelector("#dhl-bg-fix")) return;
+      const st = document.createElement("style");
+      st.id = "dhl-bg-fix";
+      st.textContent = `
+        .message-list-wrapper,
+        [class*='message-list'] {
+          background: #F2F2F2 !important;
+        }
+      `;
+      root.appendChild(st);
+    }
+
     function paintUserMessages(root) {
       const userMsgs = root.querySelectorAll(
         ".user-message, [class*='user-message'], [class*='userMessage']"
@@ -472,10 +484,9 @@
       const root = getMessageListRoot();
       if (!root) return false;
 
-      /* pinta o que já existe */
+      forceGrayBackground(root);
       paintUserMessages(root);
 
-      /* observa mensagens novas chegando */
       if (userMsgObserver) userMsgObserver.disconnect();
       userMsgObserver = new MutationObserver(() => paintUserMessages(root));
       userMsgObserver.observe(root, { childList: true, subtree: true });
@@ -622,6 +633,10 @@
 
     /* ==================================================
        FALAR RESPOSTA
+       --------------------------------------------------
+       Se as vozes ainda não carregaram (acontece logo
+       após trocar de idioma), aguarda o evento
+       onvoiceschanged e fala em seguida.
        ================================================== */
 
     function speak(text) {
@@ -630,14 +645,23 @@
 
       window.speechSynthesis.cancel();
 
-      const utter = new SpeechSynthesisUtterance(clean);
-      utter.lang = currentLang === "pt-br" ? "pt-BR" : "en-US";
+      const falar = () => {
+        const utter = new SpeechSynthesisUtterance(clean);
+        utter.lang = currentLang === "pt-br" ? "pt-BR" : "en-US";
+        const voice = pickVoice(currentLang);
+        if (voice) utter.voice = voice;
+        utter.rate = 1.0;
+        window.speechSynthesis.speak(utter);
+      };
 
-      const voice = pickVoice(currentLang);
-      if (voice) utter.voice = voice;
-
-      utter.rate = 1.0;
-      window.speechSynthesis.speak(utter);
+      if (window.speechSynthesis.getVoices().length === 0) {
+        window.speechSynthesis.addEventListener(
+          "voiceschanged", falar, { once: true }
+        );
+        setTimeout(falar, 500);   /* rede de segurança */
+      } else {
+        falar();
+      }
     }
 
     window.speechSynthesis.onvoiceschanged = () => {};
@@ -656,10 +680,15 @@
 
     /* ==================================================
        LISTENER DAS RESPOSTAS
+       --------------------------------------------------
+       Recebe o ELEMENTO como parâmetro para poder ser
+       conectado ANTES do messenger entrar no DOM.
+       Sem isso, a saudação chega antes do listener
+       existir (condição de corrida) e não é narrada.
        ================================================== */
 
-    function attachResponseListener() {
-      const dfMessenger = document.querySelector("df-messenger");
+    function attachResponseListener(dfMessenger) {
+      if (!dfMessenger) dfMessenger = document.querySelector("df-messenger");
       if (!dfMessenger) return;
 
       if (dfMessenger.dataset.dgResponseAttached === "true") return;
@@ -683,6 +712,9 @@
       });
     }
 
+    /* conecta já, sem esperar o dfMessengerLoaded */
+    attachResponseListener(document.querySelector("df-messenger"));
+
     /* ==================================================
        TROCA DE IDIOMA
        ================================================== */
@@ -697,13 +729,15 @@
       df.setAttribute("agent-id", AGENT_ID);
       df.setAttribute("language-code", langCode);
       df.setAttribute("chat-icon", CHAT_ICON);
+
+      /* CRÍTICO: listener conectado ANTES do appendChild,
+         para garantir que a saudação seja narrada */
+      attachResponseListener(df);
+
       container.appendChild(df);
 
-      setTimeout(() => {
-        attachResponseListener();
-        customizeTitlebarWithRetries();
-        fixUserMessageColorWithRetries();
-      }, 700);
+      customizeTitlebarWithRetries();
+      fixUserMessageColorWithRetries();
     }
 
     langSel.addEventListener("change", () => {
@@ -723,7 +757,7 @@
        ================================================== */
 
     window.addEventListener("dfMessengerLoaded", () => {
-      attachResponseListener();
+      attachResponseListener(document.querySelector("df-messenger"));
       customizeTitlebarWithRetries();
       fixUserMessageColorWithRetries();
     });
