@@ -231,7 +231,8 @@
         micDenied: "Permita o acesso ao microfone nas configurações do navegador.",
         ttsOn: "Leitura em voz alta ativada 🔊",
         ttsOff: "Leitura em voz alta desativada 🔇",
-        langChanged: "Idioma alterado para Português. A conversa foi reiniciada."
+        langChanged: "Idioma alterado para Português. A conversa foi reiniciada.",
+        linkLabel: "Abrir link"
       },
       "en": {
         title: "DGuardian",
@@ -241,7 +242,8 @@
         micDenied: "Please allow microphone access in your browser settings.",
         ttsOn: "Read-aloud enabled 🔊",
         ttsOff: "Read-aloud disabled 🔇",
-        langChanged: "Language switched to English. The conversation was restarted."
+        langChanged: "Language switched to English. The conversation was restarted.",
+        linkLabel: "Open link"
       }
     };
 
@@ -436,11 +438,6 @@
 
     /* ==================================================
        FUNDO CINZA CLARO
-       --------------------------------------------------
-       O creme não vinha da lista de mensagens, e sim do
-       .chat-wrapper (um nível acima no shadow DOM). Por
-       isso injetamos o estilo em TODOS os níveis e ainda
-       forçamos a variável CSS no elemento.
        ================================================== */
 
     const BG_CSS = `
@@ -466,7 +463,6 @@
         const df = document.querySelector("df-messenger");
         if (!df || !df.shadowRoot) return false;
 
-        /* reforça a variável direto no elemento */
         df.style.setProperty("--df-messenger-chat-background-color", CHAT_BG);
         df.style.setProperty("--df-messenger-chat-background", CHAT_BG);
 
@@ -499,11 +495,140 @@
     }
 
     /* ==================================================
+       LINKS CLICÁVEIS
+       --------------------------------------------------
+       O Dialogflow devolve as respostas como texto puro,
+       então as URLs aparecem escritas mas não clicáveis.
+       Aqui varremos cada resposta nova, achamos tudo que
+       começa com http:// ou https:// e trocamos por um
+       link enxuto ("Abrir link" / "Open link").
+       ================================================== */
+
+    const URL_RE = /https?:\/\/[^\s<>"'`]+/g;
+
+    /* estilo do link, injetado na lista de mensagens */
+    function injectLinkStyle(root) {
+      if (!root || root.querySelector("#dhl-link-style")) return;
+      const st = document.createElement("style");
+      st.id = "dhl-link-style";
+      st.textContent = `
+        a.dhl-link {
+          display: inline-block;
+          color: #D40511 !important;
+          font-weight: bold;
+          text-decoration: underline;
+          cursor: pointer;
+          word-break: break-word;
+        }
+        a.dhl-link:hover {
+          background: #FFCC00;
+          text-decoration: none;
+          border-radius: 3px;
+          padding: 0 3px;
+        }
+      `;
+      root.appendChild(st);
+    }
+
+    /* remove pontuação colada no fim da URL
+       (ex.: "...aspx." ou "...aspx)" ) */
+    function trimUrl(url) {
+      let cut = "";
+      while (url.length && ".,;:!?".includes(url.slice(-1))) {
+        cut = url.slice(-1) + cut;
+        url = url.slice(0, -1);
+      }
+      /* fecha parênteses/colchetes desbalanceados */
+      const pares = [[")", "("], ["]", "["], ["}", "{"]];
+      let mudou = true;
+      while (mudou && url.length) {
+        mudou = false;
+        for (const [fim, ini] of pares) {
+          if (url.endsWith(fim)) {
+            const abre = (url.match(new RegExp("\\" + ini, "g")) || []).length;
+            const fecha = (url.match(new RegExp("\\" + fim, "g")) || []).length;
+            if (fecha > abre) {
+              cut = fim + cut;
+              url = url.slice(0, -1);
+              mudou = true;
+            }
+          }
+        }
+      }
+      return [url, cut];
+    }
+
+    /* percorre os nós de texto e troca URLs por <a> */
+    function linkifyNode(node) {
+      const texto = node.nodeValue;
+      if (!texto || !/https?:\/\//i.test(texto)) return false;
+
+      URL_RE.lastIndex = 0;
+      const frag = document.createDocumentFragment();
+      let pos = 0, m;
+
+      while ((m = URL_RE.exec(texto)) !== null) {
+        const [url, sobra] = trimUrl(m[0]);
+        if (!url) continue;
+
+        if (m.index > pos) {
+          frag.appendChild(
+            document.createTextNode(texto.slice(pos, m.index))
+          );
+        }
+
+        const a = document.createElement("a");
+        a.className = "dhl-link";
+        a.href = url;
+        a.target = "_blank";
+        a.rel = "noopener noreferrer";
+        a.title = url;                       /* URL completa no hover */
+        a.textContent = UI_TEXT[currentLang].linkLabel;
+        frag.appendChild(a);
+
+        if (sobra) frag.appendChild(document.createTextNode(sobra));
+        pos = m.index + m[0].length;
+      }
+
+      if (pos === 0) return false;
+      if (pos < texto.length) {
+        frag.appendChild(document.createTextNode(texto.slice(pos)));
+      }
+
+      node.parentNode.replaceChild(frag, node);
+      return true;
+    }
+
+    function linkifyMessages(root) {
+      const msgs = root.querySelectorAll(
+        ".bot-message, [class*='bot-message'], [class*='botMessage']"
+      );
+
+      msgs.forEach(msg => {
+        if (msg.dataset.dhlLinked === "1") return;   /* já tratado */
+        msg.dataset.dhlLinked = "1";
+
+        /* coleta os nós de texto antes de alterar a árvore */
+        const walker = document.createTreeWalker(
+          msg, NodeFilter.SHOW_TEXT, null
+        );
+        const nodes = [];
+        while (walker.nextNode()) nodes.push(walker.currentNode);
+
+        nodes.forEach(n => {
+          /* não mexe em texto que já está dentro de um link */
+          if (n.parentElement && n.parentElement.closest("a")) return;
+          linkifyNode(n);
+        });
+      });
+    }
+
+    /* ==================================================
        TEXTO BRANCO NO BALÃO DO USUÁRIO
        ================================================== */
 
-    let userMsgObserver = null;
-    let userMsgTimer = null;
+    let msgObserver = null;
+    let msgTimer = null;
 
     function getMessageListRoot() {
       try {
@@ -532,24 +657,36 @@
       });
     }
 
-    function setupUserMessageWatcher() {
+    /* um único observer cuida da cor E dos links */
+    function processMessages(root) {
+      if (msgObserver) msgObserver.disconnect();   /* evita loop */
+      paintUserMessages(root);
+      linkifyMessages(root);
+      if (msgObserver) {
+        msgObserver.observe(root, { childList: true, subtree: true });
+      }
+    }
+
+    function setupMessageWatcher() {
       const root = getMessageListRoot();
       if (!root) return false;
 
-      paintUserMessages(root);
+      injectLinkStyle(root);
 
-      if (userMsgObserver) userMsgObserver.disconnect();
-      userMsgObserver = new MutationObserver(() => paintUserMessages(root));
-      userMsgObserver.observe(root, { childList: true, subtree: true });
+      if (msgObserver) msgObserver.disconnect();
+      msgObserver = new MutationObserver(() => processMessages(root));
+
+      processMessages(root);
+      msgObserver.observe(root, { childList: true, subtree: true });
 
       return true;
     }
 
-    function fixUserMessageColorWithRetries(tries = 40) {
-      clearInterval(userMsgTimer);
-      userMsgTimer = setInterval(() => {
-        if (setupUserMessageWatcher() || --tries <= 0) {
-          clearInterval(userMsgTimer);
+    function setupMessageWatcherWithRetries(tries = 40) {
+      clearInterval(msgTimer);
+      msgTimer = setInterval(() => {
+        if (setupMessageWatcher() || --tries <= 0) {
+          clearInterval(msgTimer);
         }
       }, 300);
     }
@@ -654,6 +791,7 @@
 
     /* ==================================================
        LIMPEZA DO TEXTO PARA VOZ
+       (as URLs continuam sendo ignoradas na narração)
        ================================================== */
 
     function cleanForSpeech(text) {
@@ -780,7 +918,7 @@
 
       customizeTitlebarWithRetries();
       applyChatBackgroundWithRetries();
-      fixUserMessageColorWithRetries();
+      setupMessageWatcherWithRetries();
     }
 
     langSel.addEventListener("change", () => {
@@ -803,7 +941,7 @@
       attachResponseListener(document.querySelector("df-messenger"));
       customizeTitlebarWithRetries();
       applyChatBackgroundWithRetries();
-      fixUserMessageColorWithRetries();
+      setupMessageWatcherWithRetries();
     });
 
     setupRecognition();
