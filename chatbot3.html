@@ -222,6 +222,17 @@
     /* cor de fundo do chat */
     const CHAT_BG = "#F2F2F2";
 
+    /* avatar do usuário: silhueta branca em círculo vermelho DHL.
+       É um SVG embutido, não precisa de arquivo nem de internet. */
+    const USER_AVATAR =
+      "data:image/svg+xml;utf8," + encodeURIComponent(
+        '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 40 40">' +
+        '<circle cx="20" cy="20" r="20" fill="#D40511"/>' +
+        '<circle cx="20" cy="15.5" r="6.2" fill="#FFFFFF"/>' +
+        '<path d="M7.5 34.5c0-6.9 5.6-10.5 12.5-10.5s12.5 3.6 12.5 10.5z" fill="#FFFFFF"/>' +
+        '</svg>'
+      );
+
     const UI_TEXT = {
       "pt-br": {
         title: "DGuardian",
@@ -232,7 +243,8 @@
         ttsOn: "Leitura em voz alta ativada 🔊",
         ttsOff: "Leitura em voz alta desativada 🔇",
         langChanged: "Idioma alterado para Português. A conversa foi reiniciada.",
-        linkLabel: "Abrir link"
+        linkLabel: "Abrir link",
+        youAlt: "Você"
       },
       "en": {
         title: "DGuardian",
@@ -243,7 +255,8 @@
         ttsOn: "Read-aloud enabled 🔊",
         ttsOff: "Read-aloud disabled 🔇",
         langChanged: "Language switched to English. The conversation was restarted.",
-        linkLabel: "Open link"
+        linkLabel: "Open link",
+        youAlt: "You"
       }
     };
 
@@ -495,23 +508,41 @@
     }
 
     /* ==================================================
-       LINKS CLICÁVEIS
-       --------------------------------------------------
-       O Dialogflow devolve as respostas como texto puro,
-       então as URLs aparecem escritas mas não clicáveis.
-       Aqui varremos cada resposta nova, achamos tudo que
-       começa com http:// ou https:// e trocamos por um
-       link enxuto ("Abrir link" / "Open link").
+       ESTILO DOS AVATARES E LINKS
        ================================================== */
 
-    const URL_RE = /https?:\/\/[^\s<>"'`]+/g;
-
-    /* estilo do link, injetado na lista de mensagens */
-    function injectLinkStyle(root) {
-      if (!root || root.querySelector("#dhl-link-style")) return;
+    function injectMsgStyle(root) {
+      if (!root || root.querySelector("#dhl-msg-style")) return;
       const st = document.createElement("style");
-      st.id = "dhl-link-style";
+      st.id = "dhl-msg-style";
       st.textContent = `
+        /* linha: avatar + balão, estilo WhatsApp */
+        .dhl-row {
+          display: flex;
+          align-items: flex-start;
+          gap: 8px;
+          margin: 10px 0;
+        }
+        .dhl-row.dhl-user {
+          flex-direction: row-reverse;
+        }
+        .dhl-row .message {
+          margin: 0 !important;
+        }
+        .dhl-avatar {
+          width: 34px;
+          height: 34px;
+          border-radius: 50%;
+          flex-shrink: 0;
+          object-fit: cover;
+        }
+        /* fotinha da DGuardian em círculo amarelo */
+        .dhl-avatar.dhl-bot {
+          background: #FFCC00;
+          padding: 3px;
+        }
+
+        /* links clicáveis */
         a.dhl-link {
           display: inline-block;
           color: #D40511 !important;
@@ -530,22 +561,70 @@
       root.appendChild(st);
     }
 
-    /* remove pontuação colada no fim da URL
-       (ex.: "...aspx." ou "...aspx)" ) */
+    /* ==================================================
+       AVATARES (fotinha ao lado de cada mensagem)
+       --------------------------------------------------
+       Envolve cada balão numa linha flex e coloca o
+       avatar do lado: DGuardian à esquerda, usuário à
+       direita. A foto real do usuário do Outlook não é
+       possível aqui porque o chat roda em iframe de
+       outro domínio (o SharePoint não expõe quem está
+       logado para dentro do iframe), então usamos um
+       avatar genérico.
+       ================================================== */
+
+    function isUserMsg(el) {
+      return /user-message|userMessage/i.test(el.className || "");
+    }
+
+    function addAvatars(root) {
+      const msgs = root.querySelectorAll(
+        ".bot-message, .user-message, [class*='bot-message'], [class*='user-message']"
+      );
+
+      msgs.forEach(msg => {
+        /* já está dentro de uma linha nossa? ignora */
+        if (msg.parentElement &&
+            msg.parentElement.classList.contains("dhl-row")) return;
+        if (msg.dataset.dhlAvatar === "1") return;
+        msg.dataset.dhlAvatar = "1";
+
+        const user = isUserMsg(msg);
+
+        const row = document.createElement("div");
+        row.className = "dhl-row " + (user ? "dhl-user" : "dhl-bot-row");
+
+        const img = document.createElement("img");
+        img.className = "dhl-avatar " + (user ? "dhl-user-av" : "dhl-bot");
+        img.src = user ? USER_AVATAR : CHAT_ICON;
+        img.alt = user ? UI_TEXT[currentLang].youAlt : "DGuardian";
+
+        msg.parentNode.insertBefore(row, msg);
+        row.appendChild(img);
+        row.appendChild(msg);
+      });
+    }
+
+    /* ==================================================
+       LINKS CLICÁVEIS
+       ================================================== */
+
+    const URL_RE = /https?:\/\/[^\s<>"'`]+/g;
+
+    /* remove pontuação colada no fim da URL */
     function trimUrl(url) {
       let cut = "";
       while (url.length && ".,;:!?".includes(url.slice(-1))) {
         cut = url.slice(-1) + cut;
         url = url.slice(0, -1);
       }
-      /* fecha parênteses/colchetes desbalanceados */
       const pares = [[")", "("], ["]", "["], ["}", "{"]];
       let mudou = true;
       while (mudou && url.length) {
         mudou = false;
         for (const [fim, ini] of pares) {
           if (url.endsWith(fim)) {
-            const abre = (url.match(new RegExp("\\" + ini, "g")) || []).length;
+            const abre  = (url.match(new RegExp("\\" + ini, "g")) || []).length;
             const fecha = (url.match(new RegExp("\\" + fim, "g")) || []).length;
             if (fecha > abre) {
               cut = fim + cut;
@@ -558,7 +637,6 @@
       return [url, cut];
     }
 
-    /* percorre os nós de texto e troca URLs por <a> */
     function linkifyNode(node) {
       const texto = node.nodeValue;
       if (!texto || !/https?:\/\//i.test(texto)) return false;
@@ -572,9 +650,7 @@
         if (!url) continue;
 
         if (m.index > pos) {
-          frag.appendChild(
-            document.createTextNode(texto.slice(pos, m.index))
-          );
+          frag.appendChild(document.createTextNode(texto.slice(pos, m.index)));
         }
 
         const a = document.createElement("a");
@@ -582,7 +658,7 @@
         a.href = url;
         a.target = "_blank";
         a.rel = "noopener noreferrer";
-        a.title = url;                       /* URL completa no hover */
+        a.title = url;
         a.textContent = UI_TEXT[currentLang].linkLabel;
         frag.appendChild(a);
 
@@ -605,18 +681,14 @@
       );
 
       msgs.forEach(msg => {
-        if (msg.dataset.dhlLinked === "1") return;   /* já tratado */
+        if (msg.dataset.dhlLinked === "1") return;
         msg.dataset.dhlLinked = "1";
 
-        /* coleta os nós de texto antes de alterar a árvore */
-        const walker = document.createTreeWalker(
-          msg, NodeFilter.SHOW_TEXT, null
-        );
+        const walker = document.createTreeWalker(msg, NodeFilter.SHOW_TEXT, null);
         const nodes = [];
         while (walker.nextNode()) nodes.push(walker.currentNode);
 
         nodes.forEach(n => {
-          /* não mexe em texto que já está dentro de um link */
           if (n.parentElement && n.parentElement.closest("a")) return;
           linkifyNode(n);
         });
@@ -657,11 +729,14 @@
       });
     }
 
-    /* um único observer cuida da cor E dos links */
+    /* um único observer cuida da cor, dos avatares e dos links */
     function processMessages(root) {
       if (msgObserver) msgObserver.disconnect();   /* evita loop */
+
       paintUserMessages(root);
       linkifyMessages(root);
+      addAvatars(root);
+
       if (msgObserver) {
         msgObserver.observe(root, { childList: true, subtree: true });
       }
@@ -671,7 +746,7 @@
       const root = getMessageListRoot();
       if (!root) return false;
 
-      injectLinkStyle(root);
+      injectMsgStyle(root);
 
       if (msgObserver) msgObserver.disconnect();
       msgObserver = new MutationObserver(() => processMessages(root));
