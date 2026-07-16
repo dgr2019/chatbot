@@ -219,6 +219,9 @@
     const CHAT_ICON = "https://dgr2019.github.io/chatbot/dguardian-logo.png";
     const DHL_LOGO  = "https://dgr2019.github.io/chatbot/logo-dhl.png";
 
+    /* cor de fundo do chat */
+    const CHAT_BG = "#F2F2F2";
+
     const UI_TEXT = {
       "pt-br": {
         title: "DGuardian",
@@ -432,7 +435,71 @@
     }
 
     /* ==================================================
-       FUNDO CINZA + TEXTO BRANCO NO BALÃO DO USUÁRIO
+       FUNDO CINZA CLARO
+       --------------------------------------------------
+       O creme não vinha da lista de mensagens, e sim do
+       .chat-wrapper (um nível acima no shadow DOM). Por
+       isso injetamos o estilo em TODOS os níveis e ainda
+       forçamos a variável CSS no elemento.
+       ================================================== */
+
+    const BG_CSS = `
+      .chat-wrapper,
+      .message-list-wrapper,
+      [class*='chat-wrapper'],
+      [class*='message-list'] {
+        background: ${CHAT_BG} !important;
+        background-color: ${CHAT_BG} !important;
+      }
+    `;
+
+    function injectBg(root, id) {
+      if (!root || root.querySelector("#" + id)) return;
+      const st = document.createElement("style");
+      st.id = id;
+      st.textContent = BG_CSS;
+      root.appendChild(st);
+    }
+
+    function applyChatBackground() {
+      try {
+        const df = document.querySelector("df-messenger");
+        if (!df || !df.shadowRoot) return false;
+
+        /* reforça a variável direto no elemento */
+        df.style.setProperty("--df-messenger-chat-background-color", CHAT_BG);
+        df.style.setProperty("--df-messenger-chat-background", CHAT_BG);
+
+        injectBg(df.shadowRoot, "dhl-bg-0");
+
+        const chat = df.shadowRoot.querySelector("df-messenger-chat");
+        if (!chat || !chat.shadowRoot) return false;
+        injectBg(chat.shadowRoot, "dhl-bg-1");
+
+        const list =
+          chat.shadowRoot.querySelector("df-message-list") ||
+          chat.shadowRoot.querySelector("[class*='message-list']");
+        if (list && list.shadowRoot) injectBg(list.shadowRoot, "dhl-bg-2");
+
+        return !!list;
+      } catch (e) {
+        return false;
+      }
+    }
+
+    let bgTimer = null;
+
+    function applyChatBackgroundWithRetries(tries = 40) {
+      clearInterval(bgTimer);
+      bgTimer = setInterval(() => {
+        if (applyChatBackground() || --tries <= 0) {
+          clearInterval(bgTimer);
+        }
+      }, 300);
+    }
+
+    /* ==================================================
+       TEXTO BRANCO NO BALÃO DO USUÁRIO
        ================================================== */
 
     let userMsgObserver = null;
@@ -453,21 +520,6 @@
       }
     }
 
-    /* reforça o fundo cinza dentro do shadow DOM, caso a
-       variável CSS não pegue em alguma versão do widget */
-    function forceGrayBackground(root) {
-      if (root.querySelector("#dhl-bg-fix")) return;
-      const st = document.createElement("style");
-      st.id = "dhl-bg-fix";
-      st.textContent = `
-        .message-list-wrapper,
-        [class*='message-list'] {
-          background: #F2F2F2 !important;
-        }
-      `;
-      root.appendChild(st);
-    }
-
     function paintUserMessages(root) {
       const userMsgs = root.querySelectorAll(
         ".user-message, [class*='user-message'], [class*='userMessage']"
@@ -484,7 +536,6 @@
       const root = getMessageListRoot();
       if (!root) return false;
 
-      forceGrayBackground(root);
       paintUserMessages(root);
 
       if (userMsgObserver) userMsgObserver.disconnect();
@@ -633,10 +684,6 @@
 
     /* ==================================================
        FALAR RESPOSTA
-       --------------------------------------------------
-       Se as vozes ainda não carregaram (acontece logo
-       após trocar de idioma), aguarda o evento
-       onvoiceschanged e fala em seguida.
        ================================================== */
 
     function speak(text) {
@@ -680,11 +727,6 @@
 
     /* ==================================================
        LISTENER DAS RESPOSTAS
-       --------------------------------------------------
-       Recebe o ELEMENTO como parâmetro para poder ser
-       conectado ANTES do messenger entrar no DOM.
-       Sem isso, a saudação chega antes do listener
-       existir (condição de corrida) e não é narrada.
        ================================================== */
 
     function attachResponseListener(dfMessenger) {
@@ -737,6 +779,7 @@
       container.appendChild(df);
 
       customizeTitlebarWithRetries();
+      applyChatBackgroundWithRetries();
       fixUserMessageColorWithRetries();
     }
 
@@ -759,6 +802,7 @@
     window.addEventListener("dfMessengerLoaded", () => {
       attachResponseListener(document.querySelector("df-messenger"));
       customizeTitlebarWithRetries();
+      applyChatBackgroundWithRetries();
       fixUserMessageColorWithRetries();
     });
 
