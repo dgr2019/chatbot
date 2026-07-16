@@ -222,16 +222,8 @@
     /* cor de fundo do chat */
     const CHAT_BG = "#F2F2F2";
 
-    /* avatar do usuário: silhueta branca em círculo vermelho DHL.
-       É um SVG embutido, não precisa de arquivo nem de internet. */
-    const USER_AVATAR =
-      "data:image/svg+xml;utf8," + encodeURIComponent(
-        '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 40 40">' +
-        '<circle cx="20" cy="20" r="20" fill="#D40511"/>' +
-        '<circle cx="20" cy="15.5" r="6.2" fill="#FFFFFF"/>' +
-        '<path d="M7.5 34.5c0-6.9 5.6-10.5 12.5-10.5s12.5 3.6 12.5 10.5z" fill="#FFFFFF"/>' +
-        '</svg>'
-      );
+    /* tamanho do avatar (px) - estilo WhatsApp */
+    const AVATAR_SIZE = 30;
 
     const UI_TEXT = {
       "pt-br": {
@@ -508,7 +500,7 @@
     }
 
     /* ==================================================
-       ESTILO DOS AVATARES E LINKS
+       ESTILO DAS MENSAGENS (links)
        ================================================== */
 
     function injectMsgStyle(root) {
@@ -516,33 +508,6 @@
       const st = document.createElement("style");
       st.id = "dhl-msg-style";
       st.textContent = `
-        /* linha: avatar + balão, estilo WhatsApp */
-        .dhl-row {
-          display: flex;
-          align-items: flex-start;
-          gap: 8px;
-          margin: 10px 0;
-        }
-        .dhl-row.dhl-user {
-          flex-direction: row-reverse;
-        }
-        .dhl-row .message {
-          margin: 0 !important;
-        }
-        .dhl-avatar {
-          width: 34px;
-          height: 34px;
-          border-radius: 50%;
-          flex-shrink: 0;
-          object-fit: cover;
-        }
-        /* fotinha da DGuardian em círculo amarelo */
-        .dhl-avatar.dhl-bot {
-          background: #FFCC00;
-          padding: 3px;
-        }
-
-        /* links clicáveis */
         a.dhl-link {
           display: inline-block;
           color: #D40511 !important;
@@ -564,17 +529,54 @@
     /* ==================================================
        AVATARES (fotinha ao lado de cada mensagem)
        --------------------------------------------------
-       Envolve cada balão numa linha flex e coloca o
-       avatar do lado: DGuardian à esquerda, usuário à
-       direita. A foto real do usuário do Outlook não é
-       possível aqui porque o chat roda em iframe de
-       outro domínio (o SharePoint não expõe quem está
-       logado para dentro do iframe), então usamos um
-       avatar genérico.
+       O tamanho é aplicado INLINE com !important porque
+       o CSS interno do widget sobrescrevia a classe e os
+       avatares saíam gigantes.
+
+       DGuardian: logo dela em círculo amarelo (esquerda)
+       Usuário:   logo da DHL em círculo amarelo (direita)
        ================================================== */
 
     function isUserMsg(el) {
       return /user-message|userMessage/i.test(el.className || "");
+    }
+
+    function styleAvatar(img, isUser) {
+      const s = img.style;
+      const set = (k, v) => s.setProperty(k, v, "important");
+
+      set("width",  AVATAR_SIZE + "px");
+      set("height", AVATAR_SIZE + "px");
+      set("min-width",  AVATAR_SIZE + "px");
+      set("min-height", AVATAR_SIZE + "px");
+      set("max-width",  AVATAR_SIZE + "px");
+      set("max-height", AVATAR_SIZE + "px");
+      set("border-radius", "50%");
+      set("flex-shrink", "0");
+      set("background", "#FFCC00");
+      set("display", "block");
+      set("box-sizing", "border-box");
+
+      if (isUser) {
+        /* logo DHL é horizontal: "contain" evita cortar,
+           padding dá respiro dentro do círculo */
+        set("object-fit", "contain");
+        set("padding", "5px 3px");
+      } else {
+        set("object-fit", "cover");
+        set("padding", "2px");
+      }
+    }
+
+    function styleRow(row, isUser) {
+      const s = row.style;
+      const set = (k, v) => s.setProperty(k, v, "important");
+
+      set("display", "flex");
+      set("align-items", "flex-end");
+      set("gap", "7px");
+      set("margin", "8px 0");
+      set("flex-direction", isUser ? "row-reverse" : "row");
     }
 
     function addAvatars(root) {
@@ -583,7 +585,6 @@
       );
 
       msgs.forEach(msg => {
-        /* já está dentro de uma linha nossa? ignora */
         if (msg.parentElement &&
             msg.parentElement.classList.contains("dhl-row")) return;
         if (msg.dataset.dhlAvatar === "1") return;
@@ -592,12 +593,16 @@
         const user = isUserMsg(msg);
 
         const row = document.createElement("div");
-        row.className = "dhl-row " + (user ? "dhl-user" : "dhl-bot-row");
+        row.className = "dhl-row";
+        styleRow(row, user);
 
         const img = document.createElement("img");
-        img.className = "dhl-avatar " + (user ? "dhl-user-av" : "dhl-bot");
-        img.src = user ? USER_AVATAR : CHAT_ICON;
+        img.src = user ? DHL_LOGO : CHAT_ICON;
         img.alt = user ? UI_TEXT[currentLang].youAlt : "DGuardian";
+        styleAvatar(img, user);
+
+        /* tira a margem própria do balão pra não desalinhar */
+        msg.style.setProperty("margin", "0", "important");
 
         msg.parentNode.insertBefore(row, msg);
         row.appendChild(img);
@@ -611,7 +616,6 @@
 
     const URL_RE = /https?:\/\/[^\s<>"'`]+/g;
 
-    /* remove pontuação colada no fim da URL */
     function trimUrl(url) {
       let cut = "";
       while (url.length && ".,;:!?".includes(url.slice(-1))) {
@@ -729,7 +733,7 @@
       });
     }
 
-    /* um único observer cuida da cor, dos avatares e dos links */
+    /* um único observer cuida da cor, dos links e dos avatares */
     function processMessages(root) {
       if (msgObserver) msgObserver.disconnect();   /* evita loop */
 
