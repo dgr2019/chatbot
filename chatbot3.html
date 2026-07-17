@@ -42,6 +42,10 @@
       /* FUNDO DO CHAT - cinza bem clarinho */
       --df-messenger-chat-background-color: #F2F2F2;
 
+      /* LARGURA DA JANELA DO CHAT */
+      --df-messenger-chat-window-width: 460px;
+      --df-messenger-chat-window-height: 620px;
+
       --df-messenger-button-titlebar-color: #FFCC00;
       --df-messenger-font-color: #D40511;
       --df-messenger-send-icon: #D40511;
@@ -158,6 +162,7 @@
       df-messenger {
         right: 18px;
         bottom: 88px;
+        --df-messenger-chat-window-width: 92vw;
       }
       #dg-voice-bar {
         right: 70px;
@@ -221,6 +226,9 @@
 
     /* cor de fundo do chat */
     const CHAT_BG = "#F2F2F2";
+
+    /* largura da janela do chat (px) */
+    const CHAT_WIDTH = 460;
 
     /* tamanho do avatar (px) - estilo WhatsApp */
     const AVATAR_SIZE = 30;
@@ -444,16 +452,27 @@
     }
 
     /* ==================================================
-       FUNDO CINZA CLARO
+       FUNDO CINZA + LARGURA DA JANELA
        ================================================== */
 
     const BG_CSS = `
+      df-messenger-chat,
+      .chat-wrapper,
+      [class*='chat-wrapper'] {
+        width: ${CHAT_WIDTH}px !important;
+        max-width: 96vw !important;
+      }
       .chat-wrapper,
       .message-list-wrapper,
       [class*='chat-wrapper'],
       [class*='message-list'] {
         background: ${CHAT_BG} !important;
         background-color: ${CHAT_BG} !important;
+      }
+      /* garante que nada estoure a largura */
+      .message-list-wrapper,
+      [class*='message-list'] {
+        overflow-x: hidden !important;
       }
     `;
 
@@ -472,6 +491,7 @@
 
         df.style.setProperty("--df-messenger-chat-background-color", CHAT_BG);
         df.style.setProperty("--df-messenger-chat-background", CHAT_BG);
+        df.style.setProperty("--df-messenger-chat-window-width", CHAT_WIDTH + "px");
 
         injectBg(df.shadowRoot, "dhl-bg-0");
 
@@ -502,7 +522,7 @@
     }
 
     /* ==================================================
-       ESTILO DAS MENSAGENS (links e e-mails)
+       ESTILO DAS MENSAGENS (links, e-mails e balões)
        ================================================== */
 
     function injectMsgStyle(root) {
@@ -511,18 +531,26 @@
       st.id = "dhl-msg-style";
       st.textContent = `
         a.dhl-link, a.dhl-mail {
-          display: inline-block;
+          display: inline;
           color: #D40511 !important;
           font-weight: bold;
           text-decoration: underline;
           cursor: pointer;
-          word-break: break-word;
+          overflow-wrap: anywhere;
         }
         a.dhl-link:hover, a.dhl-mail:hover {
           background: #FFCC00;
           text-decoration: none;
           border-radius: 3px;
-          padding: 0 3px;
+        }
+        /* o balão precisa poder encolher dentro da linha flex,
+           senão o texto vaza para fora da janela */
+        .dhl-row .message,
+        .dhl-row [class*='message'] {
+          min-width: 0 !important;
+          max-width: 100% !important;
+          overflow-wrap: anywhere !important;
+          word-break: break-word !important;
         }
       `;
       root.appendChild(st);
@@ -553,7 +581,6 @@
       set("box-sizing", "border-box");
 
       if (isUser) {
-        /* logo DHL é horizontal: "contain" evita cortar */
         set("object-fit", "contain");
         set("padding", "5px 3px");
       } else {
@@ -570,7 +597,25 @@
       set("align-items", "flex-end");
       set("gap", "7px");
       set("margin", "8px 0");
+      set("width", "100%");
+      set("max-width", "100%");
+      set("box-sizing", "border-box");
       set("flex-direction", isUser ? "row-reverse" : "row");
+      /* mensagens do usuário encostam à direita, do bot à esquerda */
+      set("justify-content", "flex-start");
+    }
+
+    /* deixa o balão encolher e quebrar linha dentro da linha flex */
+    function styleBubble(msg) {
+      const set = (k, v) => msg.style.setProperty(k, v, "important");
+      set("margin", "0");
+      set("min-width", "0");
+      set("flex", "0 1 auto");
+      /* deixa espaço para o avatar + gap */
+      set("max-width", "calc(100% - " + (AVATAR_SIZE + 14) + "px)");
+      set("overflow-wrap", "anywhere");
+      set("word-break", "break-word");
+      set("box-sizing", "border-box");
     }
 
     function addAvatars(root) {
@@ -580,7 +625,10 @@
 
       msgs.forEach(msg => {
         if (msg.parentElement &&
-            msg.parentElement.classList.contains("dhl-row")) return;
+            msg.parentElement.classList.contains("dhl-row")) {
+          styleBubble(msg);   /* reforça em quem já foi tratado */
+          return;
+        }
         if (msg.dataset.dhlAvatar === "1") return;
         msg.dataset.dhlAvatar = "1";
 
@@ -595,7 +643,7 @@
         img.alt = user ? UI_TEXT[currentLang].youAlt : "DGuardian";
         styleAvatar(img, user);
 
-        msg.style.setProperty("margin", "0", "important");
+        styleBubble(msg);
 
         msg.parentNode.insertBefore(row, msg);
         row.appendChild(img);
@@ -605,20 +653,11 @@
 
     /* ==================================================
        LINKS E E-MAILS CLICÁVEIS
-       --------------------------------------------------
-       URLs viram "Abrir link"; e-mails viram mailto:,
-       que abre o Outlook já com o destinatário
-       preenchido. O e-mail continua aparecendo escrito,
-       porque a pessoa precisa ver o endereço.
        ================================================== */
 
-    /* URL ou e-mail, na mesma varredura.
-       A URL vem primeiro pra não confundir um e-mail
-       que esteja dentro de um endereço web. */
     const LINK_RE =
       /(https?:\/\/[^\s<>"'`]+)|([A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Za-z]{2,})/g;
 
-    /* remove pontuação colada no fim (ex.: "...@dhl.com." ) */
     function trimTail(txt) {
       let cut = "";
       while (txt.length && ".,;:!?".includes(txt.slice(-1))) {
@@ -672,11 +711,10 @@
           a.title = alvo;
           a.textContent = UI_TEXT[currentLang].linkLabel;
         } else {
-          /* mailto: abre o Outlook com o destinatário pronto */
           a.className = "dhl-mail";
           a.href = "mailto:" + alvo;
           a.title = UI_TEXT[currentLang].mailTitle;
-          a.textContent = alvo;      /* mostra o endereço */
+          a.textContent = alvo;
         }
 
         frag.appendChild(a);
