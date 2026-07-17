@@ -233,6 +233,9 @@
     /* tamanho do avatar (px) - estilo WhatsApp */
     const AVATAR_SIZE = 30;
 
+    /* espaço entre avatar e balão (px) */
+    const AVATAR_GAP = 7;
+
     const UI_TEXT = {
       "pt-br": {
         title: "DGuardian",
@@ -469,7 +472,6 @@
         background: ${CHAT_BG} !important;
         background-color: ${CHAT_BG} !important;
       }
-      /* garante que nada estoure a largura */
       .message-list-wrapper,
       [class*='message-list'] {
         overflow-x: hidden !important;
@@ -522,7 +524,7 @@
     }
 
     /* ==================================================
-       ESTILO DAS MENSAGENS (links, e-mails e balões)
+       ESTILO DAS MENSAGENS (links e e-mails)
        ================================================== */
 
     function injectMsgStyle(root) {
@@ -542,15 +544,6 @@
           background: #FFCC00;
           text-decoration: none;
           border-radius: 3px;
-        }
-        /* o balão precisa poder encolher dentro da linha flex,
-           senão o texto vaza para fora da janela */
-        .dhl-row .message,
-        .dhl-row [class*='message'] {
-          min-width: 0 !important;
-          max-width: 100% !important;
-          overflow-wrap: anywhere !important;
-          word-break: break-word !important;
         }
       `;
       root.appendChild(st);
@@ -595,27 +588,63 @@
 
       set("display", "flex");
       set("align-items", "flex-end");
-      set("gap", "7px");
+      set("gap", AVATAR_GAP + "px");
       set("margin", "8px 0");
       set("width", "100%");
       set("max-width", "100%");
       set("box-sizing", "border-box");
       set("flex-direction", isUser ? "row-reverse" : "row");
-      /* mensagens do usuário encostam à direita, do bot à esquerda */
       set("justify-content", "flex-start");
     }
 
-    /* deixa o balão encolher e quebrar linha dentro da linha flex */
-    function styleBubble(msg) {
-      const set = (k, v) => msg.style.setProperty(k, v, "important");
-      set("margin", "0");
-      set("min-width", "0");
-      set("flex", "0 1 auto");
-      /* deixa espaço para o avatar + gap */
-      set("max-width", "calc(100% - " + (AVATAR_SIZE + 14) + "px)");
-      set("overflow-wrap", "anywhere");
-      set("word-break", "break-word");
-      set("box-sizing", "border-box");
+    /* ==================================================
+       LARGURA DOS BALÕES (medida em pixels)
+       --------------------------------------------------
+       Percentual não resolvia: o widget impõe a própria
+       largura ao balão e ignora o "calc(100% - x)".
+       Aqui medimos a largura real da área de mensagens
+       e travamos o balão em pixels, que ele não discute.
+       ================================================== */
+
+    function bubbleMaxWidth(root) {
+      /* acha o container visível da lista */
+      const wrapper =
+        root.querySelector(".message-list-wrapper") ||
+        root.querySelector("[class*='message-list']") ||
+        (root.host || null);
+
+      let largura = 0;
+      if (wrapper && wrapper.clientWidth) {
+        largura = wrapper.clientWidth;
+        const cs = getComputedStyle(wrapper);
+        largura -= (parseFloat(cs.paddingLeft) || 0);
+        largura -= (parseFloat(cs.paddingRight) || 0);
+      }
+      if (!largura && root.host) largura = root.host.clientWidth;
+      if (!largura) largura = CHAT_WIDTH;
+
+      /* desconta avatar + gap + folga da barra de rolagem */
+      const disponivel = largura - AVATAR_SIZE - AVATAR_GAP - 14;
+      return Math.max(150, Math.floor(disponivel));
+    }
+
+    function sizeBubbles(root) {
+      const max = bubbleMaxWidth(root);
+      root.querySelectorAll(".dhl-row").forEach(row => {
+        const msg = row.querySelector(
+          ".bot-message, .user-message, [class*='bot-message'], [class*='user-message']"
+        );
+        if (!msg) return;
+        const set = (k, v) => msg.style.setProperty(k, v, "important");
+        set("margin", "0");
+        set("min-width", "0");
+        set("flex", "0 1 auto");
+        set("width", "auto");
+        set("max-width", max + "px");
+        set("overflow-wrap", "anywhere");
+        set("word-break", "break-word");
+        set("box-sizing", "border-box");
+      });
     }
 
     function addAvatars(root) {
@@ -625,10 +654,7 @@
 
       msgs.forEach(msg => {
         if (msg.parentElement &&
-            msg.parentElement.classList.contains("dhl-row")) {
-          styleBubble(msg);   /* reforça em quem já foi tratado */
-          return;
-        }
+            msg.parentElement.classList.contains("dhl-row")) return;
         if (msg.dataset.dhlAvatar === "1") return;
         msg.dataset.dhlAvatar = "1";
 
@@ -643,12 +669,13 @@
         img.alt = user ? UI_TEXT[currentLang].youAlt : "DGuardian";
         styleAvatar(img, user);
 
-        styleBubble(msg);
-
         msg.parentNode.insertBefore(row, msg);
         row.appendChild(img);
         row.appendChild(msg);
       });
+
+      /* mede depois que o navegador desenhou as linhas */
+      requestAnimationFrame(() => sizeBubbles(root));
     }
 
     /* ==================================================
@@ -759,6 +786,7 @@
 
     let msgObserver = null;
     let msgTimer = null;
+    let msgRoot = null;
 
     function getMessageListRoot() {
       try {
@@ -794,6 +822,7 @@
       paintUserMessages(root);
       linkifyMessages(root);
       addAvatars(root);
+      sizeBubbles(root);
 
       if (msgObserver) {
         msgObserver.observe(root, { childList: true, subtree: true });
@@ -804,6 +833,7 @@
       const root = getMessageListRoot();
       if (!root) return false;
 
+      msgRoot = root;
       injectMsgStyle(root);
 
       if (msgObserver) msgObserver.disconnect();
@@ -811,6 +841,10 @@
 
       processMessages(root);
       msgObserver.observe(root, { childList: true, subtree: true });
+
+      /* remede depois que tudo assentou */
+      setTimeout(() => sizeBubbles(root), 600);
+      setTimeout(() => sizeBubbles(root), 1500);
 
       return true;
     }
@@ -823,6 +857,11 @@
         }
       }, 300);
     }
+
+    /* recalcula quando a janela muda de tamanho */
+    window.addEventListener("resize", () => {
+      if (msgRoot) sizeBubbles(msgRoot);
+    });
 
     /* ==================================================
        INPUT DO DIALOGFLOW
