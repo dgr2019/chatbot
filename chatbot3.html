@@ -236,6 +236,7 @@
         ttsOff: "Leitura em voz alta desativada 🔇",
         langChanged: "Idioma alterado para Português. A conversa foi reiniciada.",
         linkLabel: "Abrir link",
+        mailTitle: "Clique para enviar um e-mail",
         youAlt: "Você"
       },
       "en": {
@@ -248,6 +249,7 @@
         ttsOff: "Read-aloud disabled 🔇",
         langChanged: "Language switched to English. The conversation was restarted.",
         linkLabel: "Open link",
+        mailTitle: "Click to send an email",
         youAlt: "You"
       }
     };
@@ -500,7 +502,7 @@
     }
 
     /* ==================================================
-       ESTILO DAS MENSAGENS (links)
+       ESTILO DAS MENSAGENS (links e e-mails)
        ================================================== */
 
     function injectMsgStyle(root) {
@@ -508,7 +510,7 @@
       const st = document.createElement("style");
       st.id = "dhl-msg-style";
       st.textContent = `
-        a.dhl-link {
+        a.dhl-link, a.dhl-mail {
           display: inline-block;
           color: #D40511 !important;
           font-weight: bold;
@@ -516,7 +518,7 @@
           cursor: pointer;
           word-break: break-word;
         }
-        a.dhl-link:hover {
+        a.dhl-link:hover, a.dhl-mail:hover {
           background: #FFCC00;
           text-decoration: none;
           border-radius: 3px;
@@ -528,13 +530,6 @@
 
     /* ==================================================
        AVATARES (fotinha ao lado de cada mensagem)
-       --------------------------------------------------
-       O tamanho é aplicado INLINE com !important porque
-       o CSS interno do widget sobrescrevia a classe e os
-       avatares saíam gigantes.
-
-       DGuardian: logo dela em círculo amarelo (esquerda)
-       Usuário:   logo da DHL em círculo amarelo (direita)
        ================================================== */
 
     function isUserMsg(el) {
@@ -558,8 +553,7 @@
       set("box-sizing", "border-box");
 
       if (isUser) {
-        /* logo DHL é horizontal: "contain" evita cortar,
-           padding dá respiro dentro do círculo */
+        /* logo DHL é horizontal: "contain" evita cortar */
         set("object-fit", "contain");
         set("padding", "5px 3px");
       } else {
@@ -601,7 +595,6 @@
         img.alt = user ? UI_TEXT[currentLang].youAlt : "DGuardian";
         styleAvatar(img, user);
 
-        /* tira a margem própria do balão pra não desalinhar */
         msg.style.setProperty("margin", "0", "important");
 
         msg.parentNode.insertBefore(row, msg);
@@ -611,66 +604,89 @@
     }
 
     /* ==================================================
-       LINKS CLICÁVEIS
+       LINKS E E-MAILS CLICÁVEIS
+       --------------------------------------------------
+       URLs viram "Abrir link"; e-mails viram mailto:,
+       que abre o Outlook já com o destinatário
+       preenchido. O e-mail continua aparecendo escrito,
+       porque a pessoa precisa ver o endereço.
        ================================================== */
 
-    const URL_RE = /https?:\/\/[^\s<>"'`]+/g;
+    /* URL ou e-mail, na mesma varredura.
+       A URL vem primeiro pra não confundir um e-mail
+       que esteja dentro de um endereço web. */
+    const LINK_RE =
+      /(https?:\/\/[^\s<>"'`]+)|([A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Za-z]{2,})/g;
 
-    function trimUrl(url) {
+    /* remove pontuação colada no fim (ex.: "...@dhl.com." ) */
+    function trimTail(txt) {
       let cut = "";
-      while (url.length && ".,;:!?".includes(url.slice(-1))) {
-        cut = url.slice(-1) + cut;
-        url = url.slice(0, -1);
+      while (txt.length && ".,;:!?".includes(txt.slice(-1))) {
+        cut = txt.slice(-1) + cut;
+        txt = txt.slice(0, -1);
       }
       const pares = [[")", "("], ["]", "["], ["}", "{"]];
       let mudou = true;
-      while (mudou && url.length) {
+      while (mudou && txt.length) {
         mudou = false;
         for (const [fim, ini] of pares) {
-          if (url.endsWith(fim)) {
-            const abre  = (url.match(new RegExp("\\" + ini, "g")) || []).length;
-            const fecha = (url.match(new RegExp("\\" + fim, "g")) || []).length;
+          if (txt.endsWith(fim)) {
+            const abre  = (txt.match(new RegExp("\\" + ini, "g")) || []).length;
+            const fecha = (txt.match(new RegExp("\\" + fim, "g")) || []).length;
             if (fecha > abre) {
               cut = fim + cut;
-              url = url.slice(0, -1);
+              txt = txt.slice(0, -1);
               mudou = true;
             }
           }
         }
       }
-      return [url, cut];
+      return [txt, cut];
     }
 
     function linkifyNode(node) {
       const texto = node.nodeValue;
-      if (!texto || !/https?:\/\//i.test(texto)) return false;
+      if (!texto) return false;
+      if (!/https?:\/\//i.test(texto) && !/@/.test(texto)) return false;
 
-      URL_RE.lastIndex = 0;
+      LINK_RE.lastIndex = 0;
       const frag = document.createDocumentFragment();
-      let pos = 0, m;
+      let pos = 0, m, achou = false;
 
-      while ((m = URL_RE.exec(texto)) !== null) {
-        const [url, sobra] = trimUrl(m[0]);
-        if (!url) continue;
+      while ((m = LINK_RE.exec(texto)) !== null) {
+        const ehUrl = !!m[1];
+        const [alvo, sobra] = trimTail(m[0]);
+        if (!alvo) continue;
 
         if (m.index > pos) {
           frag.appendChild(document.createTextNode(texto.slice(pos, m.index)));
         }
 
         const a = document.createElement("a");
-        a.className = "dhl-link";
-        a.href = url;
-        a.target = "_blank";
-        a.rel = "noopener noreferrer";
-        a.title = url;
-        a.textContent = UI_TEXT[currentLang].linkLabel;
+
+        if (ehUrl) {
+          a.className = "dhl-link";
+          a.href = alvo;
+          a.target = "_blank";
+          a.rel = "noopener noreferrer";
+          a.title = alvo;
+          a.textContent = UI_TEXT[currentLang].linkLabel;
+        } else {
+          /* mailto: abre o Outlook com o destinatário pronto */
+          a.className = "dhl-mail";
+          a.href = "mailto:" + alvo;
+          a.title = UI_TEXT[currentLang].mailTitle;
+          a.textContent = alvo;      /* mostra o endereço */
+        }
+
         frag.appendChild(a);
+        achou = true;
 
         if (sobra) frag.appendChild(document.createTextNode(sobra));
         pos = m.index + m[0].length;
       }
 
-      if (pos === 0) return false;
+      if (!achou) return false;
       if (pos < texto.length) {
         frag.appendChild(document.createTextNode(texto.slice(pos)));
       }
@@ -870,13 +886,14 @@
 
     /* ==================================================
        LIMPEZA DO TEXTO PARA VOZ
-       (as URLs continuam sendo ignoradas na narração)
+       (URLs e e-mails são ignorados na narração)
        ================================================== */
 
     function cleanForSpeech(text) {
       return (text || "")
         .replace(/<[^>]*>/g, " ")
         .replace(/https?:\/\/\S+/g, "")
+        .replace(/[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Za-z]{2,}/g, "")
         .replace(/[\u{1F300}-\u{1FAFF}\u{2600}-\u{27BF}]/gu, "")
         .replace(/\s+/g, " ")
         .trim();
