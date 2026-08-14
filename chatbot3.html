@@ -20,9 +20,9 @@
     html, body {
       margin: 0;
       padding: 0;
-      background: transparent !important;
+      background: transparent;
       font-family: Arial, Helvetica, sans-serif;
-      height: 540px;
+      height: 640px;
       overflow: hidden;
     }
     /* ==================================================
@@ -36,8 +36,8 @@
       /* FUNDO DO CHAT - cinza bem clarinho */
       --df-messenger-chat-background-color: #F2F2F2;
       /* LARGURA DA JANELA DO CHAT */
-      --df-messenger-chat-window-width: 100%;
-      --df-messenger-chat-window-height: 100%;
+      --df-messenger-chat-window-width: 460px;
+      --df-messenger-chat-window-height: 620px;
       --df-messenger-button-titlebar-color: #FFCC00;
       --df-messenger-font-color: #D40511;
       --df-messenger-send-icon: #D40511;
@@ -45,44 +45,35 @@
       --df-messenger-input-font-color: #191919;
       --df-messenger-input-placeholder-font-color: #888888;
       position: fixed;
-      top: 0;
-      left: 0;
-      right: 0;
-      bottom: 0;
-      width: 100%;
-      height: 100%;
+      right: 70px;
+      bottom: 75px;
       z-index: 998;
-    }
-    /* esconde o botao flutuante nativo: usamos expand */
-    df-messenger::part(chat-button),
-    df-messenger #widgetIcon {
-      display: none !important;
     }
     /* ==================================================
        BARRA DE VOZ
        ================================================== */
     #dg-voice-bar {
       position: fixed;
-      bottom: 12px;
-      left: 12px;
+      bottom: 24px;
+      right: 150px;
       display: flex;
       align-items: center;
-      gap: 8px;
+      gap: 10px;
       z-index: 999;
     }
     /* ==================================================
        BOTÕES
        ================================================== */
     .dg-btn {
-      width: 38px;
-      height: 38px;
-      border: 2px solid #FFFFFF;
+      width: 58px;
+      height: 58px;
+      border: 3px solid #FFFFFF;
       border-radius: 50%;
       background: #D40511;
       color: #FFFFFF;
-      font-size: 15px;
+      font-size: 21px;
       cursor: pointer;
-      box-shadow: 0 4px 12px rgba(0,0,0,.25);
+      box-shadow: 0 8px 22px rgba(0,0,0,.28);
       display: flex;
       align-items: center;
       justify-content: center;
@@ -112,24 +103,24 @@
        SELETOR DE IDIOMA
        ================================================== */
     #dg-lang {
-      height: 38px;
+      height: 58px;
       border: 2px solid #FFCC00;
-      border-radius: 20px;
+      border-radius: 30px;
       background: #FFFFFF;
       color: #D40511;
       font-weight: 800;
-      font-size: 12px;
-      padding: 0 10px;
+      font-size: 14px;
+      padding: 0 18px;
       cursor: pointer;
-      box-shadow: 0 4px 12px rgba(0,0,0,.18);
+      box-shadow: 0 8px 22px rgba(0,0,0,.20);
     }
     /* ==================================================
        STATUS
        ================================================== */
     #dg-status {
       position: fixed;
-      bottom: 60px;
-      left: 12px;
+      bottom: 92px;
+      right: 150px;
       background: #191919;
       color: #FFCC00;
       font-size: 13px;
@@ -144,9 +135,14 @@
        RESPONSIVO
        ================================================== */
     @media (max-width: 700px) {
+      df-messenger {
+        right: 18px;
+        bottom: 88px;
+        --df-messenger-chat-window-width: 92vw;
+      }
       #dg-voice-bar {
-        bottom: 10px;
-        left: 10px;
+        right: 70px;
+        bottom: 22px;
       }
       .dg-btn {
         width: 50px;
@@ -180,7 +176,6 @@
   <!-- CHAT -->
   <div id="dg-container">
     <df-messenger
-      expand="true"
       intent="WELCOME"
       chat-title="DGuardian"
       agent-id="0e08ef10-1d77-401e-a0ff-e49389d31ded"
@@ -397,23 +392,11 @@
        FUNDO CINZA + LARGURA DA JANELA
        ================================================== */
     const BG_CSS = `
-      :host {
-        width: 100% !important;
-        height: 100% !important;
-      }
       df-messenger-chat,
       .chat-wrapper,
-      [class*='chat-wrapper'],
-      [class*='chat-window'] {
-        width: 100% !important;
-        max-width: 100% !important;
-        height: 100% !important;
-        max-height: 100% !important;
-        min-width: 100% !important;
-        position: absolute !important;
-        inset: 0 !important;
-        border-radius: 0 !important;
-        box-shadow: none !important;
+      [class*='chat-wrapper'] {
+        width: ${CHAT_WIDTH}px !important;
+        max-width: 96vw !important;
       }
       .chat-wrapper,
       .message-list-wrapper,
@@ -440,8 +423,7 @@
         if (!df || !df.shadowRoot) return false;
         df.style.setProperty("--df-messenger-chat-background-color", CHAT_BG);
         df.style.setProperty("--df-messenger-chat-background", CHAT_BG);
-        df.style.setProperty("--df-messenger-chat-window-width", "100%");
-        df.style.setProperty("--df-messenger-chat-window-height", "100%");
+        df.style.setProperty("--df-messenger-chat-window-width", CHAT_WIDTH + "px");
         injectBg(df.shadowRoot, "dhl-bg-0");
         const chat = df.shadowRoot.querySelector("df-messenger-chat");
         if (!chat || !chat.shadowRoot) return false;
@@ -928,7 +910,6 @@
       const container = document.getElementById("dg-container");
       container.innerHTML = "";
       const df = document.createElement("df-messenger");
-      df.setAttribute("expand", "true");
       df.setAttribute("intent", "WELCOME");
       df.setAttribute("chat-title", UI_TEXT[langCode].title);
       df.setAttribute("agent-id", AGENT_ID);
