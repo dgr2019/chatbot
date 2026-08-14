@@ -22,11 +22,31 @@
       box-sizing: border-box;
     }
 
-    body {
+    html, body {
       margin: 0;
-      min-height: 100vh;
-      background: radial-gradient(circle, #FFFFFF 0%, #F2F2F2 55%, #E5E5E5 100%);
+      padding: 0;
+      /* nada de min-height 100vh: dentro do iframe isso criava
+         o espaço cinza gigante. o body agora tem só a altura
+         do próprio chat. */
+      background: transparent;
       font-family: Arial, Helvetica, sans-serif;
+    }
+
+    /* ==================================================
+       CARTÃO QUE SEGURA O CHAT
+       --------------------------------------------------
+       O chat vira um cartão fixo do tamanho definido em
+       CHAT_HEIGHT, ancorado no topo. Sem position:fixed,
+       então não sobra área vazia dentro do iframe.
+       ================================================== */
+
+    #dg-shell {
+      position: relative;
+      width: 100%;
+      /* altura controlada pela variável (ver script/JS) */
+      height: 540px;
+      max-width: 480px;
+      margin: 0 auto;
     }
 
     /* ==================================================
@@ -42,9 +62,9 @@
       /* FUNDO DO CHAT - cinza bem clarinho */
       --df-messenger-chat-background-color: #F2F2F2;
 
-      /* LARGURA DA JANELA DO CHAT */
-      --df-messenger-chat-window-width: 460px;
-      --df-messenger-chat-window-height: 620px;
+      /* JANELA DO CHAT preenche o cartão */
+      --df-messenger-chat-window-width: 100%;
+      --df-messenger-chat-window-height: 540px;
 
       --df-messenger-button-titlebar-color: #FFCC00;
       --df-messenger-font-color: #D40511;
@@ -53,40 +73,43 @@
       --df-messenger-input-font-color: #191919;
       --df-messenger-input-placeholder-font-color: #888888;
 
-      position: fixed;
-      right: 70px;
-      bottom: 75px;
-      z-index: 998;
+      /* preenche o cartão, sem fixar na tela */
+      position: absolute;
+      inset: 0;
+      z-index: 1;
     }
 
     /* ==================================================
-       BARRA DE VOZ
+       BARRA DE VOZ (idioma, voz, microfone)
+       --------------------------------------------------
+       Agora ancorada ao cartão, no canto inferior
+       esquerdo, sobreposta ao chat.
        ================================================== */
 
     #dg-voice-bar {
-      position: fixed;
-      bottom: 24px;
-      right: 150px;
+      position: absolute;
+      bottom: 66px;
+      left: 10px;
       display: flex;
       align-items: center;
-      gap: 10px;
-      z-index: 999;
+      gap: 8px;
+      z-index: 5;
     }
 
     /* ==================================================
-       BOTÕES
+       BOTÕES (menores, pra caber no chat compacto)
        ================================================== */
 
     .dg-btn {
-      width: 58px;
-      height: 58px;
-      border: 3px solid #FFFFFF;
+      width: 40px;
+      height: 40px;
+      border: 2px solid #FFFFFF;
       border-radius: 50%;
       background: #D40511;
       color: #FFFFFF;
-      font-size: 21px;
+      font-size: 16px;
       cursor: pointer;
-      box-shadow: 0 8px 22px rgba(0,0,0,.28);
+      box-shadow: 0 4px 12px rgba(0,0,0,.25);
       display: flex;
       align-items: center;
       justify-content: center;
@@ -99,7 +122,7 @@
 
     .dg-btn:focus-visible {
       outline: 3px solid #FFCC00;
-      outline-offset: 3px;
+      outline-offset: 2px;
     }
 
     .dg-btn.off {
@@ -114,25 +137,25 @@
 
     @keyframes dg-pulse {
       0%   { box-shadow: 0 0 0 0 rgba(212,5,17,.45); }
-      70%  { box-shadow: 0 0 0 16px rgba(212,5,17,0); }
+      70%  { box-shadow: 0 0 0 12px rgba(212,5,17,0); }
       100% { box-shadow: 0 0 0 0 rgba(212,5,17,0); }
     }
 
     /* ==================================================
-       SELETOR DE IDIOMA
+       SELETOR DE IDIOMA (menor)
        ================================================== */
 
     #dg-lang {
-      height: 58px;
+      height: 40px;
       border: 2px solid #FFCC00;
-      border-radius: 30px;
+      border-radius: 22px;
       background: #FFFFFF;
       color: #D40511;
       font-weight: 800;
-      font-size: 14px;
-      padding: 0 18px;
+      font-size: 12px;
+      padding: 0 10px;
       cursor: pointer;
-      box-shadow: 0 8px 22px rgba(0,0,0,.20);
+      box-shadow: 0 4px 12px rgba(0,0,0,.18);
     }
 
     /* ==================================================
@@ -140,78 +163,55 @@
        ================================================== */
 
     #dg-status {
-      position: fixed;
-      bottom: 92px;
-      right: 150px;
+      position: absolute;
+      bottom: 112px;
+      left: 10px;
       background: #191919;
       color: #FFCC00;
-      font-size: 13px;
+      font-size: 12px;
       font-weight: bold;
-      padding: 8px 14px;
-      border-radius: 16px;
-      z-index: 999;
+      padding: 6px 12px;
+      border-radius: 14px;
+      z-index: 6;
       display: none;
-      box-shadow: 0 8px 22px rgba(0,0,0,.22);
-    }
-
-    /* ==================================================
-       RESPONSIVO
-       ================================================== */
-
-    @media (max-width: 700px) {
-      df-messenger {
-        right: 18px;
-        bottom: 88px;
-        --df-messenger-chat-window-width: 92vw;
-      }
-      #dg-voice-bar {
-        right: 70px;
-        bottom: 22px;
-      }
-      .dg-btn {
-        width: 50px;
-        height: 50px;
-      }
-      #dg-lang {
-        height: 50px;
-        padding: 0 12px;
-      }
-      #dg-status {
-        right: 18px;
-        bottom: 82px;
-      }
+      box-shadow: 0 4px 12px rgba(0,0,0,.22);
     }
   </style>
 </head>
 
 <body>
 
-  <!-- STATUS -->
-  <div id="dg-status"></div>
+  <!-- CARTÃO -->
+  <div id="dg-shell">
 
-  <!-- CONTROLES -->
-  <div id="dg-voice-bar">
-    <select id="dg-lang" title="Idioma / Language" aria-label="Idioma do chatbot">
-      <option value="pt-br" selected>🇧🇷 PT</option>
-      <option value="en">🇺🇸 EN</option>
-    </select>
+    <!-- STATUS -->
+    <div id="dg-status"></div>
 
-    <button id="dg-tts" class="dg-btn" title="Ouvir respostas do bot"
-      aria-label="Ativar ou desativar leitura em voz alta">🔊</button>
+    <!-- CONTROLES -->
+    <div id="dg-voice-bar">
+      <select id="dg-lang" title="Idioma / Language" aria-label="Idioma do chatbot">
+        <option value="pt-br" selected>🇧🇷 PT</option>
+        <option value="en">🇺🇸 EN</option>
+      </select>
 
-    <button id="dg-mic" class="dg-btn" title="Falar com a DGuardian"
-      aria-label="Falar com a DGuardian pelo microfone">🎤</button>
-  </div>
+      <button id="dg-tts" class="dg-btn" title="Ouvir respostas do bot"
+        aria-label="Ativar ou desativar leitura em voz alta">🔊</button>
 
-  <!-- CHAT -->
-  <div id="dg-container">
-    <df-messenger
-      intent="WELCOME"
-      chat-title="DGuardian"
-      agent-id="0e08ef10-1d77-401e-a0ff-e49389d31ded"
-      language-code="pt-br"
-      chat-icon="https://dgr2019.github.io/chatbot/dguardian-logo.png">
-    </df-messenger>
+      <button id="dg-mic" class="dg-btn" title="Falar com a DGuardian"
+        aria-label="Falar com a DGuardian pelo microfone">🎤</button>
+    </div>
+
+    <!-- CHAT -->
+    <div id="dg-container">
+      <df-messenger
+        intent="WELCOME"
+        chat-title="DGuardian"
+        agent-id="0e08ef10-1d77-401e-a0ff-e49389d31ded"
+        language-code="pt-br"
+        chat-icon="https://dgr2019.github.io/chatbot/dguardian-logo.png">
+      </df-messenger>
+    </div>
+
   </div>
 
 
@@ -227,14 +227,17 @@
     /* cor de fundo do chat */
     const CHAT_BG = "#F2F2F2";
 
-    /* largura da janela do chat (px) */
-    const CHAT_WIDTH = 460;
+    /* ALTURA DO CHAT (px) - mude aqui se quiser maior/menor */
+    const CHAT_HEIGHT = 540;
 
-    /* tamanho do avatar (px) - estilo WhatsApp */
+    /* tamanho do avatar (px) */
     const AVATAR_SIZE = 30;
 
     /* espaço entre avatar e balão (px) */
     const AVATAR_GAP = 7;
+
+    /* aplica a altura escolhida no cartão e no messenger */
+    document.getElementById("dg-shell").style.height = CHAT_HEIGHT + "px";
 
     const UI_TEXT = {
       "pt-br": {
@@ -304,7 +307,6 @@
         const root = titlebar.shadowRoot;
         if (!root) return false;
 
-        /* já aplicado? só atualiza o subtítulo (troca de idioma) */
         const existing = root.querySelector("#dhl-header");
         if (existing) {
           existing.querySelector(".dhl-sub").textContent =
@@ -322,8 +324,8 @@
         st.textContent = `
           .title-wrapper {
             background: linear-gradient(180deg, #FFD84D 0%, #FFCC00 100%) !important;
-            min-height: 72px !important;
-            padding: 10px 16px !important;
+            min-height: 64px !important;
+            padding: 8px 14px !important;
             position: relative !important;
             overflow: hidden !important;
             display: flex !important;
@@ -333,7 +335,7 @@
           .title-wrapper::after {
             content: "";
             position: absolute;
-            right: 30px;
+            right: 24px;
             top: 0;
             width: 45%;
             height: 100%;
@@ -366,7 +368,7 @@
           #dhl-header {
             display: flex;
             align-items: center;
-            gap: 14px;
+            gap: 12px;
             flex: 1;
             min-width: 0;
             position: relative;
@@ -374,12 +376,12 @@
             font-family: Arial, Helvetica, sans-serif;
           }
           #dhl-header img.dhl-logo {
-            height: 24px;
+            height: 22px;
             flex-shrink: 0;
           }
           #dhl-header .dhl-divider {
             width: 3px;
-            height: 40px;
+            height: 36px;
             background: #D40511;
             border-radius: 2px;
             flex-shrink: 0;
@@ -391,7 +393,7 @@
           #dhl-header .dhl-title {
             display: block;
             color: #D40511;
-            font-size: 20px;
+            font-size: 18px;
             font-weight: bold;
             letter-spacing: .2px;
             white-space: nowrap;
@@ -399,7 +401,7 @@
           #dhl-header .dhl-sub {
             display: block;
             color: #191919;
-            font-size: 13px;
+            font-size: 12px;
             white-space: nowrap;
           }
         `;
@@ -455,15 +457,17 @@
     }
 
     /* ==================================================
-       FUNDO CINZA + LARGURA DA JANELA
+       FUNDO CINZA + TAMANHO DA JANELA
        ================================================== */
 
     const BG_CSS = `
       df-messenger-chat,
       .chat-wrapper,
       [class*='chat-wrapper'] {
-        width: ${CHAT_WIDTH}px !important;
-        max-width: 96vw !important;
+        width: 100% !important;
+        max-width: 100% !important;
+        height: ${CHAT_HEIGHT}px !important;
+        max-height: ${CHAT_HEIGHT}px !important;
       }
       .chat-wrapper,
       .message-list-wrapper,
@@ -493,7 +497,7 @@
 
         df.style.setProperty("--df-messenger-chat-background-color", CHAT_BG);
         df.style.setProperty("--df-messenger-chat-background", CHAT_BG);
-        df.style.setProperty("--df-messenger-chat-window-width", CHAT_WIDTH + "px");
+        df.style.setProperty("--df-messenger-chat-window-height", CHAT_HEIGHT + "px");
 
         injectBg(df.shadowRoot, "dhl-bg-0");
 
@@ -550,7 +554,7 @@
     }
 
     /* ==================================================
-       AVATARES (fotinha ao lado de cada mensagem)
+       AVATARES
        ================================================== */
 
     function isUserMsg(el) {
@@ -599,15 +603,9 @@
 
     /* ==================================================
        LARGURA DOS BALÕES (medida em pixels)
-       --------------------------------------------------
-       Percentual não resolvia: o widget impõe a própria
-       largura ao balão e ignora o "calc(100% - x)".
-       Aqui medimos a largura real da área de mensagens
-       e travamos o balão em pixels, que ele não discute.
        ================================================== */
 
     function bubbleMaxWidth(root) {
-      /* acha o container visível da lista */
       const wrapper =
         root.querySelector(".message-list-wrapper") ||
         root.querySelector("[class*='message-list']") ||
@@ -621,9 +619,8 @@
         largura -= (parseFloat(cs.paddingRight) || 0);
       }
       if (!largura && root.host) largura = root.host.clientWidth;
-      if (!largura) largura = CHAT_WIDTH;
+      if (!largura) largura = 460;
 
-      /* desconta avatar + gap + folga da barra de rolagem */
       const disponivel = largura - AVATAR_SIZE - AVATAR_GAP - 14;
       return Math.max(150, Math.floor(disponivel));
     }
@@ -674,7 +671,6 @@
         row.appendChild(msg);
       });
 
-      /* mede depois que o navegador desenhou as linhas */
       requestAnimationFrame(() => sizeBubbles(root));
     }
 
@@ -815,9 +811,8 @@
       });
     }
 
-    /* um único observer cuida da cor, dos links e dos avatares */
     function processMessages(root) {
-      if (msgObserver) msgObserver.disconnect();   /* evita loop */
+      if (msgObserver) msgObserver.disconnect();
 
       paintUserMessages(root);
       linkifyMessages(root);
@@ -842,7 +837,6 @@
       processMessages(root);
       msgObserver.observe(root, { childList: true, subtree: true });
 
-      /* remede depois que tudo assentou */
       setTimeout(() => sizeBubbles(root), 600);
       setTimeout(() => sizeBubbles(root), 1500);
 
@@ -858,7 +852,6 @@
       }, 300);
     }
 
-    /* recalcula quando a janela muda de tamanho */
     window.addEventListener("resize", () => {
       if (msgRoot) sizeBubbles(msgRoot);
     });
@@ -963,7 +956,6 @@
 
     /* ==================================================
        LIMPEZA DO TEXTO PARA VOZ
-       (URLs e e-mails são ignorados na narração)
        ================================================== */
 
     function cleanForSpeech(text) {
@@ -1016,7 +1008,7 @@
         window.speechSynthesis.addEventListener(
           "voiceschanged", falar, { once: true }
         );
-        setTimeout(falar, 500);   /* rede de segurança */
+        setTimeout(falar, 500);
       } else {
         falar();
       }
@@ -1065,7 +1057,6 @@
       });
     }
 
-    /* conecta já, sem esperar o dfMessengerLoaded */
     attachResponseListener(document.querySelector("df-messenger"));
 
     /* ==================================================
@@ -1083,8 +1074,6 @@
       df.setAttribute("language-code", langCode);
       df.setAttribute("chat-icon", CHAT_ICON);
 
-      /* CRÍTICO: listener conectado ANTES do appendChild,
-         para garantir que a saudação seja narrada */
       attachResponseListener(df);
 
       container.appendChild(df);
