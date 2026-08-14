@@ -22,13 +22,8 @@
       padding: 0;
       background: transparent;
       font-family: Arial, Helvetica, sans-serif;
-    }
-    #dg-shell {
-      position: relative;
-      width: 100%;
-      max-width: 480px;
-      height: 540px;
-      margin: 0 auto;
+      height: 580px;
+      overflow: hidden;
     }
     /* ==================================================
        DIALOGFLOW MESSENGER
@@ -41,7 +36,7 @@
       /* FUNDO DO CHAT - cinza bem clarinho */
       --df-messenger-chat-background-color: #F2F2F2;
       /* LARGURA DA JANELA DO CHAT */
-      --df-messenger-chat-window-width: 100%;
+      --df-messenger-chat-window-width: 460px;
       --df-messenger-chat-window-height: 540px;
       --df-messenger-button-titlebar-color: #FFCC00;
       --df-messenger-font-color: #D40511;
@@ -49,33 +44,36 @@
       --df-messenger-input-box-color: #FFFFFF;
       --df-messenger-input-font-color: #191919;
       --df-messenger-input-placeholder-font-color: #888888;
-      position: absolute;
-      inset: 0;
-      z-index: 1;
+      position: fixed;
+      left: 50%;
+      transform: translateX(-50%);
+      top: 8px;
+      z-index: 998;
     }
     /* ==================================================
        BARRA DE VOZ
        ================================================== */
     #dg-voice-bar {
-      position: absolute;
-      bottom: 66px;
-      left: 10px;
+      position: fixed;
+      top: 0;
+      left: 0;
       display: flex;
       align-items: center;
       gap: 8px;
-      z-index: 5;
+      z-index: 999;
+      visibility: hidden;
     }
     /* ==================================================
        BOTÕES
        ================================================== */
     .dg-btn {
-      width: 40px;
-      height: 40px;
+      width: 38px;
+      height: 38px;
       border: 2px solid #FFFFFF;
       border-radius: 50%;
       background: #D40511;
       color: #FFFFFF;
-      font-size: 16px;
+      font-size: 15px;
       cursor: pointer;
       box-shadow: 0 4px 12px rgba(0,0,0,.25);
       display: flex;
@@ -107,9 +105,9 @@
        SELETOR DE IDIOMA
        ================================================== */
     #dg-lang {
-      height: 40px;
+      height: 38px;
       border: 2px solid #FFCC00;
-      border-radius: 22px;
+      border-radius: 20px;
       background: #FFFFFF;
       color: #D40511;
       font-weight: 800;
@@ -122,9 +120,9 @@
        STATUS
        ================================================== */
     #dg-status {
-      position: absolute;
-      bottom: 112px;
-      left: 10px;
+      position: fixed;
+      top: 0;
+      left: 0;
       background: #191919;
       color: #FFCC00;
       font-size: 13px;
@@ -139,12 +137,8 @@
        RESPONSIVO
        ================================================== */
     @media (max-width: 700px) {
-      #dg-shell {
-        max-width: 100%;
-      }
-      #dg-voice-bar {
-        left: 8px;
-        bottom: 62px;
+      df-messenger {
+        --df-messenger-chat-window-width: 94vw;
       }
       .dg-btn {
         width: 50px;
@@ -162,7 +156,6 @@
   </style>
 </head>
 <body>
-  <div id="dg-shell">
   <!-- STATUS -->
   <div id="dg-status"></div>
   <!-- CONTROLES -->
@@ -186,7 +179,6 @@
       chat-icon="https://dgr2019.github.io/chatbot/dguardian-logo.png">
     </df-messenger>
   </div>
-  </div>
   <script>
     /* ==================================================
        CONFIGURAÇÕES
@@ -198,8 +190,6 @@
     const CHAT_BG = "#F2F2F2";
     /* largura da janela do chat (px) */
     const CHAT_WIDTH = 460;
-    const CHAT_HEIGHT = 540;
-    (function(){ var sh=document.getElementById('dg-shell'); if(sh) sh.style.height = CHAT_HEIGHT+'px'; })();
     /* tamanho do avatar (px) - estilo WhatsApp */
     const AVATAR_SIZE = 30;
     /* espaço entre avatar e balão (px) */
@@ -947,6 +937,38 @@
       applyChatBackgroundWithRetries();
       setupMessageWatcherWithRetries();
     });
+
+    /* ==================================================
+       ANCORA A BARRA DE BOTOES AO INPUT DO CHAT
+       Mede onde o campo de digitacao esta e gruda a
+       barra logo acima dele. Robusto a qualquer altura.
+       ================================================== */
+    function positionVoiceBar() {
+      try {
+        var bar = document.getElementById("dg-voice-bar");
+        var status = document.getElementById("dg-status");
+        var df = document.querySelector("df-messenger");
+        if (!df || !df.shadowRoot) return;
+        var chat = df.shadowRoot.querySelector("df-messenger-chat");
+        if (!chat) return;
+        var rect = chat.getBoundingClientRect();
+        if (!rect || !rect.width) return;
+        /* barra no canto inferior-esquerdo da janela do chat */
+        var left = rect.left + 10;
+        var bottom = rect.bottom;
+        var barTop = bottom - 52;      /* acima do input */
+        bar.style.left = left + "px";
+        bar.style.top = barTop + "px";
+        bar.style.transform = "none";
+        bar.style.visibility = "visible";
+        status.style.left = left + "px";
+        status.style.top = (barTop - 34) + "px";
+        status.style.transform = "none";
+      } catch (e) {}
+    }
+    setInterval(positionVoiceBar, 500);
+    window.addEventListener("resize", positionVoiceBar);
+
     setupRecognition();
   </script>
 </body>
